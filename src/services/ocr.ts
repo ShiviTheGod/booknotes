@@ -1,6 +1,7 @@
 import { listPendingOcr, updateNote } from '../data/repo/notes'
 import { getImageBlob } from '../data/repo/images'
 import { detectLanguage } from './translation'
+import { VisionOcr, blobToBase64, isNativeIos } from './native/plugins'
 
 /**
  * Background text extraction from photo notes.
@@ -60,6 +61,13 @@ export async function runOcrForNote(noteId: string, imageBlobId: string): Promis
     return
   }
 
+  // On iOS, Vision does this natively: on-device, no download, no wasm, and far
+  // better on a phone camera's output than Tesseract manages.
+  if (isNativeIos()) {
+    await runVisionOcr(noteId, blob)
+    return
+  }
+
   try {
     const worker = await getWorker()
     const { data } = await worker.recognize(blob)
@@ -79,6 +87,26 @@ export async function runOcrForNote(noteId: string, imageBlobId: string): Promis
     })
   } catch (error) {
     console.error('OCR failed for note', noteId, error)
+    await updateNote(noteId, { ocrStatus: 'failed' })
+  }
+}
+
+/** Vision-framework path. Same contract as the Tesseract path: writes ocrText and status. */
+async function runVisionOcr(noteId: string, blob: Blob): Promise<void> {
+  try {
+    const base64 = await blobToBase64(blob)
+    const { text } = await VisionOcr.recognizeText({ imageBase64: base64 })
+    const trimmed = text.trim()
+
+    await updateNote(noteId, {
+      ocrStatus: 'done',
+      ocrText: trimmed,
+      // An empty result is a legitimate outcome (a photo with no legible text),
+      // so it is recorded as done rather than retried forever.
+      ocrLang: trimmed ? detectLanguage(trimmed) : undefined,
+    })
+  } catch (error) {
+    console.error('Vision OCR failed for note', noteId, error)
     await updateNote(noteId, { ocrStatus: 'failed' })
   }
 }

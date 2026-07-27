@@ -1,5 +1,14 @@
+import { isNativeIos } from './native/plugins'
+import { startNativeDictation } from './native/nativeSpeech'
+
 /**
- * Voice dictation via the Web Speech API.
+ * Voice dictation.
+ *
+ * Two engines behind one interface: SFSpeechRecognizer in the native iOS shell,
+ * the Web Speech API everywhere else. Callers never choose — `startDictation`
+ * routes, and `checkSpeechAvailability` reports what the current platform can do.
+ *
+ * The web path carries a caveat worth repeating:
  *
  * The important caveat, and the reason this file is mostly capability detection:
  * `webkitSpeechRecognition` exists on iOS Safari and works in a normal browser tab,
@@ -63,6 +72,13 @@ export type SpeechAvailability =
   | { available: false; reason: string; suggestKeyboardMic: boolean }
 
 export function checkSpeechAvailability(): SpeechAvailability {
+  // In the native iOS shell, SFSpeechRecognizer replaces the web API entirely and
+  // has none of its limitations. Permissions are requested when dictation actually
+  // starts rather than here, so this stays synchronous for the composer's useState.
+  if (isNativeIos()) {
+    return { available: true }
+  }
+
   if (!getConstructor()) {
     return {
       available: false,
@@ -97,9 +113,14 @@ export interface DictationCallbacks {
 }
 
 export function startDictation(
-  { onPartial, onFinal, onError }: DictationCallbacks,
+  callbacks: DictationCallbacks,
   lang = navigator.language || 'en-US',
 ): DictationHandle | undefined {
+  if (isNativeIos()) {
+    return startNativeDictation(callbacks, lang)
+  }
+
+  const { onPartial, onFinal, onError } = callbacks
   const Ctor = getConstructor()
   if (!Ctor) {
     onError('Dictation is not available in this browser.')
