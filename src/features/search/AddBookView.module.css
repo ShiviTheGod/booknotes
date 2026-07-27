@@ -1,0 +1,235 @@
+.searchRow {
+  position: relative;
+  margin-bottom: var(--sp-4);
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--sp-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--c-ink-faint);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3) 0 calc(var(--sp-3) * 2 + 20px);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-full);
+  color: var(--c-ink);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--c-brass);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-brass) 18%, transparent);
+}
+
+.hint {
+  color: var(--c-ink-faint);
+  font-size: var(--text-sm);
+  padding: var(--sp-2) 0;
+}
+
+.error {
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+
+  color: var(--c-terracotta);
+  background: color-mix(in srgb, var(--c-terracotta) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-terracotta) 28%, transparent);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+}
+
+.results {
+  list-style: none;
+  margin: 0 0 var(--sp-5);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-1);
+
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--c-rule-soft);
+  text-align: left;
+}
+
+.result:disabled {
+  opacity: 0.5;
+}
+
+.result:active {
+  background: var(--c-paper-deep);
+}
+
+.thumb {
+  flex-shrink: 0;
+  width: 44px;
+  height: 66px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--c-paper-deep);
+  box-shadow: var(--shadow-sm);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbBlank {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, var(--c-rule) 0%, var(--c-paper-deep) 100%);
+}
+
+.resultMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.resultTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.25;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resultAuthor {
+  font-size: var(--text-sm);
+  color: var(--c-ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resultDetail {
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
+
+.resultAdd {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+
+  color: var(--c-brass);
+  background: color-mix(in srgb, var(--c-brass) 12%, transparent);
+  border-radius: var(--r-full);
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.manualLink {
+  width: 100%;
+  min-height: var(--tap-min);
+  background: none;
+  border: 1px dashed var(--c-rule);
+  border-radius: var(--r-md);
+  color: var(--c-ink-soft);
+  font-size: var(--text-sm);
+}
+
+/* ---- manual entry form ---- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--c-ink-soft);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  color: var(--c-ink);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--c-brass);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-brass) 18%, transparent);
+}
+
+.help {
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.primaryButton {
+  flex: 1;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-5);
+
+  color: var(--c-paper);
+  background: var(--c-brass);
+  border: none;
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.primaryButton:disabled {
+  opacity: 0.45;
+}
+
+.secondaryButton {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-4);
+
+  color: var(--c-ink-soft);
+  background: none;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+}

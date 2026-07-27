@@ -1,0 +1,162 @@
+import { useEffect, useState } from 'react'
+import type { Note } from '../../data/types'
+import { deleteNote } from '../../data/repo/notes'
+import { getImageBlob } from '../../data/repo/images'
+import styles from './NoteCard.module.css'
+
+export default function NoteCard({ note }: { note: Note }) {
+  const [imageUrl, setImageUrl] = useState<string>()
+  const [showOcr, setShowOcr] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+
+  useEffect(() => {
+    if (!note.imageBlobId) return
+
+    let objectUrl: string | undefined
+    let cancelled = false
+
+    void getImageBlob(note.imageBlobId).then((blob) => {
+      if (!blob || cancelled) return
+      objectUrl = URL.createObjectURL(blob)
+      setImageUrl(objectUrl)
+    })
+
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [note.imageBlobId])
+
+  const hasOcrText = Boolean(note.ocrText && note.ocrText.length > 0)
+
+  return (
+    <article className={styles.card}>
+      <header className={styles.header}>
+        <span className={styles.type}>
+          <TypeIcon type={note.type} />
+          {note.type === 'voice' ? 'Dictated' : note.type === 'photo' ? 'Photo' : 'Note'}
+        </span>
+        <time className={styles.time} dateTime={note.createdAt}>
+          {formatTimestamp(note.createdAt)}
+        </time>
+      </header>
+
+      {imageUrl && (
+        <img
+          className={styles.photo}
+          src={imageUrl}
+          alt={note.content || 'Photographed page'}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+
+      {note.content && <p className={styles.body}>{note.content}</p>}
+
+      {note.type === 'photo' && (
+        <div className={styles.ocr}>
+          {note.ocrStatus === 'pending' && (
+            <span className={styles.ocrPending}>Reading the text in this photo…</span>
+          )}
+
+          {note.ocrStatus === 'failed' && (
+            <span className={styles.ocrFailed}>Couldn't read text from this photo.</span>
+          )}
+
+          {note.ocrStatus === 'done' && !hasOcrText && (
+            <span className={styles.ocrNone}>No readable text found.</span>
+          )}
+
+          {note.ocrStatus === 'done' && hasOcrText && (
+            <>
+              <button
+                type="button"
+                className={styles.ocrToggle}
+                onClick={() => setShowOcr((open) => !open)}
+                aria-expanded={showOcr}
+              >
+                {showOcr ? 'Hide extracted text' : 'Show extracted text'}
+              </button>
+              {showOcr && (
+                <div className={styles.ocrText}>
+                  <p className={styles.ocrLabel}>
+                    Extracted text — searchable, and kept separate from the photo itself.
+                  </p>
+                  <pre className={styles.ocrPre}>{note.ocrText}</pre>
+                  {note.translatedText && (
+                    <>
+                      <p className={styles.ocrLabel}>Translation</p>
+                      <pre className={styles.ocrPre}>{note.translatedText}</pre>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      <footer className={styles.footer}>
+        {confirming ? (
+          <span className={styles.confirm}>
+            <span>Delete this note?</span>
+            <button type="button" className={styles.keep} onClick={() => setConfirming(false)}>
+              Keep
+            </button>
+            <button
+              type="button"
+              className={styles.delete}
+              onClick={() => void deleteNote(note.id)}
+            >
+              Delete
+            </button>
+          </span>
+        ) : (
+          <button type="button" className={styles.deleteLink} onClick={() => setConfirming(true)}>
+            Delete
+          </button>
+        )}
+      </footer>
+    </article>
+  )
+}
+
+function TypeIcon({ type }: { type: Note['type'] }) {
+  if (type === 'voice') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <rect x="9" y="3" width="6" height="11" rx="3" />
+        <path d="M5 11a7 7 0 0 0 14 0" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (type === 'photo') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <rect x="3" y="6" width="18" height="14" rx="2" />
+        <circle cx="12" cy="13" r="3.5" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M5 5h14M5 10h14M5 15h9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function formatTimestamp(iso: string): string {
+  const date = new Date(iso)
+  const now = new Date()
+  const sameYear = date.getFullYear() === now.getFullYear()
+
+  return date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: sameYear ? undefined : 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}

@@ -1,0 +1,123 @@
+.loading {
+  color: var(--c-ink-faint);
+  font-size: var(--text-sm);
+}
+
+.chapterTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: 0 0 var(--sp-2);
+  margin-bottom: var(--sp-2);
+
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--c-rule);
+
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  text-align: left;
+  color: var(--c-ink);
+}
+
+.chapterTitle svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--c-ink-faint);
+}
+
+.renameRow {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.renameInput {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-brass);
+  border-radius: var(--r-md);
+  color: var(--c-ink);
+  font-family: var(--font-display);
+}
+
+.renameInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-brass) 18%, transparent);
+}
+
+.renameSave {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-4);
+
+  color: var(--c-paper);
+  background: var(--c-brass);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.renameCancel {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  color: var(--c-ink-soft);
+  background: none;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--sp-4);
+}
+
+.counterValue {
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
+
+/*
+ * Amber, not red: passing five notes is a nudge to consolidate, not an error.
+ * Nothing is blocked and nothing is lost.
+ */
+.counterOver {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--c-brass);
+}
+
+.counterNote {
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
+
+.noteList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.emptyNotes {
+  padding: var(--sp-5) var(--sp-4);
+  text-align: center;
+
+  color: var(--c-ink-faint);
+  font-size: var(--text-sm);
+  background: var(--c-paper-deep);
+  border-radius: var(--r-md);
+}

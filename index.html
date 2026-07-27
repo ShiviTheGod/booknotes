@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover lets the app paint into the iPhone notch/home-indicator area,
+         which we then pad back with env(safe-area-inset-*) in global.css -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="description" content="A personal reading-notes app. Capture key ideas chapter by chapter." />
+    <meta name="theme-color" content="#f5efe3" />
+
+    <!-- iOS standalone ("Add to Home Screen") behaviour.
+         Paths here are relative on purpose: the app is served from /booknotes/ on
+         GitHub Pages, so a leading slash would point at the domain root and 404. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="BookNotes" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+
+    <title>BookNotes</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

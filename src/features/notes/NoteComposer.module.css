@@ -1,0 +1,145 @@
+.composer {
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-5);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 68px;
+  padding: var(--sp-2);
+  margin-bottom: var(--sp-3);
+
+  background: none;
+  border: none;
+  color: var(--c-ink);
+  line-height: 1.5;
+  resize: none;
+  font-family: var(--font-ui);
+}
+
+.textarea:focus {
+  outline: none;
+}
+
+.textarea::placeholder {
+  color: var(--c-ink-faint);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.captureButtons {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.micButton,
+.photoButton {
+  position: relative;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: grid;
+  place-items: center;
+
+  color: var(--c-ink-soft);
+  background: var(--c-paper-deep);
+  border: none;
+  border-radius: var(--r-full);
+}
+
+.micButton:disabled,
+.photoButton:disabled {
+  opacity: 0.45;
+}
+
+.micButton svg,
+.photoButton svg,
+.micButtonActive svg {
+  width: 21px;
+  height: 21px;
+}
+
+.micButtonActive {
+  position: relative;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: grid;
+  place-items: center;
+
+  color: #fff;
+  background: var(--c-terracotta);
+  border: none;
+  border-radius: var(--r-full);
+}
+
+/* Slow ring pulse while the microphone is live — an unmistakable "still recording" cue. */
+.pulse {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--c-terracotta);
+  border-radius: var(--r-full);
+  animation: ring 1.6s ease-out infinite;
+}
+
+@keyframes ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+.saveButton {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-5);
+
+  color: var(--c-paper);
+  background: var(--c-brass);
+  border: none;
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.saveButton:disabled {
+  opacity: 0.4;
+}
+
+.listening {
+  margin-top: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--c-terracotta);
+}
+
+.message {
+  margin-top: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--c-ink-soft);
+}
+
+.speechHint {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--c-ink-soft);
+  background: var(--c-paper-deep);
+  border-radius: var(--r-md);
+}
+
+.speechHint strong {
+  color: var(--c-ink);
+}

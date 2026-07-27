@@ -1,0 +1,51 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+.back {
+  flex-shrink: 0;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin-left: calc(var(--sp-3) * -1);
+  display: grid;
+  place-items: center;
+  background: none;
+  border: none;
+  color: var(--c-ink-soft);
+  border-radius: var(--r-full);
+}
+
+.back:active {
+  background: var(--c-paper-deep);
+}
+
+.back svg {
+  width: 24px;
+  height: 24px;
+}
+
+.titles {
+  flex: 1;
+  min-width: 0;
+  padding-top: var(--sp-1);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  /* Long book titles must wrap rather than force a horizontal scroll. */
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  margin-top: var(--sp-1);
+  color: var(--c-ink-soft);
+  font-size: var(--text-sm);
+}
+
+.action {
+  flex-shrink: 0;
+  padding-top: var(--sp-1);
+}

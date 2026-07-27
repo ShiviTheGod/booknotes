@@ -1,0 +1,191 @@
+import { useRef, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../../data/db'
+import PageHeader from '../../components/PageHeader'
+import { downloadBackup, restoreBackup } from '../../services/backup'
+import { resetToSeed } from '../../data/seed'
+import { isIos, isStandalone } from '../../services/speech'
+import styles from './SettingsView.module.css'
+
+export default function SettingsView() {
+  const counts = useLiveQuery(async () => {
+    const [books, notes, images] = await Promise.all([
+      db.books.count(),
+      db.notes.count(),
+      db.images.count(),
+    ])
+    return { books, notes, images }
+  }, [])
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [busy, setBusy] = useState<'export' | 'import' | 'reset'>()
+  const [message, setMessage] = useState<string>()
+  const [error, setError] = useState<string>()
+  const [confirmingReset, setConfirmingReset] = useState(false)
+
+  async function handleExport() {
+    setBusy('export')
+    setMessage(undefined)
+    setError(undefined)
+    try {
+      await downloadBackup()
+      setMessage('Backup saved. Keep it somewhere outside this device.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Export failed.')
+    } finally {
+      setBusy(undefined)
+    }
+  }
+
+  async function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    const confirmed = window.confirm(
+      'Restoring replaces everything currently in BookNotes with the contents of this file. Continue?',
+    )
+    if (!confirmed) return
+
+    setBusy('import')
+    setMessage(undefined)
+    setError(undefined)
+    try {
+      const result = await restoreBackup(file)
+      setMessage(
+        `Restored ${result.books} books, ${result.chapters} chapters, ${result.notes} notes, and ${result.images} images.`,
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Import failed.')
+    } finally {
+      setBusy(undefined)
+    }
+  }
+
+  async function handleReset() {
+    setBusy('reset')
+    setError(undefined)
+    try {
+      await resetToSeed()
+      setMessage('Library reset to the sample books.')
+      setConfirmingReset(false)
+    } finally {
+      setBusy(undefined)
+    }
+  }
+
+  const showStorageWarning = isIos() && !isStandalone()
+
+  return (
+    <>
+      <PageHeader title="Settings" />
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Your library</h2>
+        <p className={styles.stat}>
+          {counts
+            ? `${counts.books} books · ${counts.notes} notes · ${counts.images} images`
+            : 'Counting…'}
+        </p>
+        <p className={styles.help}>
+          Everything is stored on this device only. Nothing is uploaded, and nothing leaves
+          unless you export it.
+        </p>
+      </section>
+
+      {showStorageWarning && (
+        <section className={styles.warning}>
+          <h2 className={styles.warningTitle}>Add BookNotes to your Home Screen</h2>
+          <p>
+            Safari clears stored data for websites left unused for about a week. Installing
+            BookNotes — <strong>Share → Add to Home Screen</strong> — exempts it from that and
+            keeps your notes safe.
+          </p>
+          <p className={styles.warningNote}>
+            One trade-off worth knowing: in-app dictation stops working once the app is
+            launched from the Home Screen. Your keyboard's microphone key still works
+            everywhere, so nothing is really lost.
+          </p>
+        </section>
+      )}
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Backup</h2>
+        <p className={styles.help}>
+          Exports every book, chapter, note, and photo into a single file. This is the only
+          copy of your notes that exists outside this device — worth doing now and then.
+        </p>
+
+        <div className={styles.buttonRow}>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={() => void handleExport()}
+            disabled={busy !== undefined}
+          >
+            {busy === 'export' ? 'Preparing…' : 'Export backup'}
+          </button>
+
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={busy !== undefined}
+          >
+            {busy === 'import' ? 'Restoring…' : 'Restore from file'}
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(event) => void handleImport(event)}
+            tabIndex={-1}
+          />
+        </div>
+      </section>
+
+      {message && <p className={styles.message}>{message}</p>}
+      {error && <p className={styles.error}>{error}</p>}
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Sample library</h2>
+        <p className={styles.help}>
+          Wipes everything and reinstalls the eight sample books. Useful for starting over,
+          destructive if you have real notes — export first.
+        </p>
+
+        {confirmingReset ? (
+          <div className={styles.buttonRow}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => setConfirmingReset(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.dangerButton}
+              onClick={() => void handleReset()}
+              disabled={busy !== undefined}
+            >
+              {busy === 'reset' ? 'Resetting…' : 'Erase and reset'}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => setConfirmingReset(true)}
+          >
+            Reset library
+          </button>
+        )}
+      </section>
+
+      <p className={styles.version}>BookNotes v0.1 — a personal reading journal.</p>
+    </>
+  )
+}
