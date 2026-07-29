@@ -103,6 +103,50 @@ export async function runOcrForNote(noteId: string, imageBlobId: string): Promis
   }
 }
 
+export interface OcrSelfTest {
+  engine: 'vision' | 'tesseract'
+  text: string
+  confidence: number
+  ms: number
+}
+
+/**
+ * Run OCR on one image and report what happened, without touching the database.
+ *
+ * Exists because the native path cannot be verified anywhere but a real device.
+ * Running the same image through whichever engine is active turns "does Vision
+ * work?" into a number that can be compared against the Tesseract baseline.
+ */
+export async function runOcrSelfTest(blob: Blob): Promise<OcrSelfTest> {
+  const started = performance.now()
+
+  if (isNativeIos()) {
+    const base64 = await blobToBase64(blob)
+    const { text, confidence } = await VisionOcr.recognizeText({ imageBase64: base64 })
+    return {
+      engine: 'vision',
+      text: text.trim(),
+      // Vision reports 0–1; match Tesseract's 0–100 so the two are comparable.
+      confidence: Math.round(confidence * 100),
+      ms: Math.round(performance.now() - started),
+    }
+  }
+
+  try {
+    const worker = await getWorker()
+    const { data } = await worker.recognize(blob)
+    return {
+      engine: 'tesseract',
+      text: data.text.trim(),
+      confidence: Math.round(data.confidence),
+      ms: Math.round(performance.now() - started),
+    }
+  } finally {
+    // The queue isn't running, so nothing else needs the worker's wasm heap.
+    await releaseWorker()
+  }
+}
+
 /** Vision-framework path. Same contract as the Tesseract path: writes ocrText and status. */
 async function runVisionOcr(noteId: string, blob: Blob): Promise<void> {
   try {

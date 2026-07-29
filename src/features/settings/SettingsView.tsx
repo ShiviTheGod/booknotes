@@ -5,6 +5,7 @@ import PageHeader from '../../components/PageHeader'
 import { downloadBackup, restoreBackup } from '../../services/backup'
 import { resetToSeed } from '../../data/seed'
 import { isIos, isStandalone } from '../../services/speech'
+import NativeDiagnostics from './NativeDiagnostics'
 import styles from './SettingsView.module.css'
 
 export default function SettingsView() {
@@ -184,6 +185,8 @@ export default function SettingsView() {
           </button>
         )}
       </section>
+
+      <NativeDiagnostics />
 
       <p className={styles.version}>BookNotes v0.1 — a personal reading journal.</p>
     </>

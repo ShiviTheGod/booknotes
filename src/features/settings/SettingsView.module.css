@@ -117,6 +117,46 @@
   border-radius: var(--r-md);
 }
 
+.diagList {
+  margin: 0 0 var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.diagRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: var(--text-sm);
+}
+
+.diagRow dt {
+  color: var(--c-ink-faint);
+  flex-shrink: 0;
+}
+
+.diagRow dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+  /* Extracted text can be long; wrap rather than push the row wide. */
+  overflow-wrap: anywhere;
+}
+
+.diagResult {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+}
+
 .version {
   margin-top: var(--sp-7);
   text-align: center;
