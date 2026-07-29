@@ -74,7 +74,10 @@ jobs:
       - name: Surface compiler errors
         if: failure()
         working-directory: ios/App
-        run: grep -E "error:|warning: .*(deprecat|unavailable)" xcodebuild.log | head -40 || true
+        # Block scalar, not a plain one: the pattern contains ": " which YAML would
+        # otherwise read as a key separator and refuse to parse the workflow at all.
+        run: |
+          grep -E "error:|is unavailable|has been renamed" xcodebuild.log | head -40 || true
 
       - name: Package as .ipa
         working-directory: ios/App
