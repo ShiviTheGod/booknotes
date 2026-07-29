@@ -68,6 +68,15 @@ export interface Note {
   ocrStatus: OcrStatus
   /** BCP-47-ish language tag detected from the OCR output, when we can tell. */
   ocrLang?: string
+  /**
+   * How much the recognizer trusts its own reading, 0–100.
+   *
+   * Worth storing because OCR fails loudly in the logs and silently in the data:
+   * a photograph it cannot read still yields confident-looking nonsense, which
+   * would otherwise land in the reader's searchable notes with nothing to flag it.
+   * Normalized across engines — Tesseract reports 0–100, Vision reports 0–1.
+   */
+  ocrConfidence?: number
   /** Populated only if a translation provider is configured; null default in v1. */
   translatedText?: string
   createdAt: string

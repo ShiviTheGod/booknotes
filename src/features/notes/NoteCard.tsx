@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Note } from '../../data/types'
 import { deleteNote } from '../../data/repo/notes'
 import { getImageBlob } from '../../data/repo/images'
+import { OCR_CONFIDENCE_THRESHOLD } from '../../services/ocr'
 import styles from './NoteCard.module.css'
 
 export default function NoteCard({ note }: { note: Note }) {
@@ -28,6 +29,8 @@ export default function NoteCard({ note }: { note: Note }) {
   }, [note.imageBlobId])
 
   const hasOcrText = Boolean(note.ocrText && note.ocrText.length > 0)
+  const lowConfidence =
+    note.ocrConfidence !== undefined && note.ocrConfidence < OCR_CONFIDENCE_THRESHOLD
 
   return (
     <article className={styles.card}>
@@ -77,6 +80,15 @@ export default function NoteCard({ note }: { note: Note }) {
               >
                 {showOcr ? 'Hide extracted text' : 'Show extracted text'}
               </button>
+
+              {lowConfidence && (
+                // OCR fails silently: an unreadable photo still produces
+                // confident-looking nonsense. Without this the reader would have no
+                // signal that what landed in their searchable notes is unreliable.
+                <p className={styles.ocrWarning}>
+                  Hard to read — this text is likely inaccurate.
+                </p>
+              )}
               {showOcr && (
                 <div className={styles.ocrText}>
                   <p className={styles.ocrLabel}>

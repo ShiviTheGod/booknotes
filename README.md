@@ -96,6 +96,13 @@ later without the UI knowing.
   on the note as separate, searchable metadata.
 - **Tesseract is lazy-loaded.** It's several megabytes, so it's dynamically imported and only
   fetched the first time you take a photo. Typing notes never pays for it.
+- **OCR quality is flagged, not assumed.** Measured against real scans: cleanly printed text
+  scores 96/100 and comes back verbatim; a 1948 document with decorative capitals and two
+  columns scores 55 and arrives readable but with the columns interleaved; a 1609 quarto using
+  the long-s scores 36 and is nonsense. Since OCR fails *silently* — an unreadable photo still
+  yields confident-looking gibberish — anything under 70 is labelled "hard to read" rather than
+  passed off as accurate. Expect roughly 13 seconds for a dense full page on a laptop, and
+  longer on a phone, which is why extraction runs in a background queue.
 - **The 5-note limit is a suggestion.** The counter turns amber past five rather than blocking
   a save — the goal is to nudge toward distilling, not to cut anyone off mid-thought.
 - **Translation is an interface, not an implementation.** A static site can't hold an API key

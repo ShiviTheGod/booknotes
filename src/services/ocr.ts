@@ -21,6 +21,17 @@ import { VisionOcr, blobToBase64, isNativeIos } from './native/plugins'
  * the same limited memory and end up slower than doing one at a time.
  */
 
+/**
+ * Below this, extracted text is shown with a caution.
+ *
+ * Chosen from measurements rather than taste. Cleanly rendered text scores 96. A
+ * 1948 printed document with decorative capitals and two columns scores 55 and comes
+ * back readable but scrambled. A 1609 quarto using the long-s scores 36 and is pure
+ * nonsense. Everything trustworthy sat in the nineties; everything problematic at 55
+ * or below, so 70 separates them with room to spare.
+ */
+export const OCR_CONFIDENCE_THRESHOLD = 70
+
 type TesseractWorker = {
   recognize: (image: Blob) => Promise<{ data: { text: string; confidence: number } }>
   terminate: () => Promise<unknown>
@@ -84,6 +95,7 @@ export async function runOcrForNote(noteId: string, imageBlobId: string): Promis
       ocrStatus: 'done',
       ocrText: text,
       ocrLang: detectLanguage(text),
+      ocrConfidence: Math.round(data.confidence),
     })
   } catch (error) {
     console.error('OCR failed for note', noteId, error)
@@ -95,7 +107,7 @@ export async function runOcrForNote(noteId: string, imageBlobId: string): Promis
 async function runVisionOcr(noteId: string, blob: Blob): Promise<void> {
   try {
     const base64 = await blobToBase64(blob)
-    const { text } = await VisionOcr.recognizeText({ imageBase64: base64 })
+    const { text, confidence } = await VisionOcr.recognizeText({ imageBase64: base64 })
     const trimmed = text.trim()
 
     await updateNote(noteId, {
@@ -104,6 +116,8 @@ async function runVisionOcr(noteId: string, blob: Blob): Promise<void> {
       // An empty result is a legitimate outcome (a photo with no legible text),
       // so it is recorded as done rather than retried forever.
       ocrLang: trimmed ? detectLanguage(trimmed) : undefined,
+      // Vision reports 0–1; Tesseract reports 0–100. Normalize so the UI has one scale.
+      ocrConfidence: trimmed ? Math.round(confidence * 100) : undefined,
     })
   } catch (error) {
     console.error('Vision OCR failed for note', noteId, error)
