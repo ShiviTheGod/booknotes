@@ -87,7 +87,25 @@ you have two-factor authentication on.
 
 ---
 
-## Step 3 — Grant permissions
+## Step 3 — Check the native engines are live
+
+**Settings → Diagnostics → Run text-extraction test.**
+
+It runs OCR over a fixed generated sample and reports which engine handled it. The
+same panel exists in the browser, so the two are directly comparable:
+
+| | Engine | Confidence | Time |
+|---|---|---|---|
+| Browser (measured) | Tesseract.js | 95 / 100 | 0.4s |
+| Installed app | **Vision** | ? | ? |
+
+If the installed app still says *Tesseract.js*, the native plugin didn't register and
+Vision is not being used — the app will work, just without the native advantages.
+
+The sample reads **"Attention is the rarest resource."** Anything else means extraction
+is misbehaving.
+
+## Step 4 — Grant permissions
 
 On first use, iOS asks separately for:
 
