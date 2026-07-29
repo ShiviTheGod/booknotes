@@ -88,7 +88,7 @@ public class SpeechPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private static func requestMicrophonePermission(_ completion: @escaping (Bool) -> Void) {
         if #available(iOS 17.0, *) {
-            AVAudioApplication.requestRecordPermission(completion: completion)
+            AVAudioApplication.requestRecordPermission(completionHandler: completion)
         } else {
             AVAudioSession.sharedInstance().requestRecordPermission(completion)
         }

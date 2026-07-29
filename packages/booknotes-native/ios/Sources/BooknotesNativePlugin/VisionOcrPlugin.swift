@@ -101,6 +101,14 @@ public class VisionOcrPlugin: CAPPlugin, CAPBridgedPlugin {
 
     /// Languages this device can recognise, so the JS side can pick sensible defaults.
     @objc func supportedLanguages(_ call: CAPPluginCall) {
+        // Querying the language list arrived in iOS 15, but the deployment target is
+        // 14.0. Recognition itself works fine on 14 — only this introspection is
+        // newer — so older devices get an empty list and fall back to the default.
+        guard #available(iOS 15.0, *) else {
+            call.resolve(["languages": [String]()])
+            return
+        }
+
         do {
             let request = VNRecognizeTextRequest()
             request.recognitionLevel = .accurate
