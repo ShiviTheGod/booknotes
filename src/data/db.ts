@@ -15,7 +15,7 @@ import type { Book, Chapter, ImageBlob, Note, Setting } from './types'
  *    a book in reading order with a single range query.
  *  - Blobs are in their own table so note queries never deserialize image data.
  */
-class ShelfieDB extends Dexie {
+class BookNotesDB extends Dexie {
   books!: EntityTable<Book, 'id'>
   chapters!: EntityTable<Chapter, 'id'>
   notes!: EntityTable<Note, 'id'>
@@ -45,7 +45,7 @@ class ShelfieDB extends Dexie {
   }
 }
 
-export const db = new ShelfieDB()
+export const db = new BookNotesDB()
 
 /** Stable id generator. crypto.randomUUID needs a secure context, which we always have. */
 export function newId(): string {

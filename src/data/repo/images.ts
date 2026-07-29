@@ -23,6 +23,12 @@ async function readDimensions(blob: Blob): Promise<{ width: number; height: numb
     }
   }
 
+  // No DOM (tests, or a worker): dimensions are optional metadata, so skip them
+  // rather than throwing and losing the image itself.
+  if (typeof Image === 'undefined' || typeof URL.createObjectURL !== 'function') {
+    return undefined
+  }
+
   return new Promise((resolve) => {
     const url = URL.createObjectURL(blob)
     const img = new Image()

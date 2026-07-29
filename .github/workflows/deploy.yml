@@ -33,6 +33,11 @@ jobs:
       - name: Type-check
         run: npx tsc -b
 
+      # Gates the deploy. The schema test in particular would have caught the
+      # unindexed ocrStatus that silently disabled OCR for days.
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
