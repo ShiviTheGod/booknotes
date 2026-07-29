@@ -1,0 +1,18 @@
+{
+  "name": "booknotes-native",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Native speech recognition and Vision text extraction for BookNotes.",
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  },
+  "files": [
+    "ios/",
+    "BooknotesNative.podspec"
+  ],
+  "peerDependencies": {
+    "@capacitor/core": ">=7.0.0"
+  }
+}

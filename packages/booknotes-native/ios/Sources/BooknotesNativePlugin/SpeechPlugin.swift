@@ -16,7 +16,19 @@ import Speech
  * streams: the caller wants partial text as it is spoken, not one value at the end.
  */
 @objc(SpeechPlugin)
-public class SpeechPlugin: CAPPlugin {
+public class SpeechPlugin: CAPPlugin, CAPBridgedPlugin {
+
+    // Capacitor 6+ registers plugins from Swift. Older versions needed a parallel
+    // Objective-C file carrying the CAP_PLUGIN macro; this replaces it.
+    public let identifier = "SpeechPlugin"
+    public let jsName = "Speech"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "checkPermissions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestPermissions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "available", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise)
+    ]
 
     private var recognizer: SFSpeechRecognizer?
     private var request: SFSpeechAudioBufferRecognitionRequest?
@@ -28,20 +40,17 @@ public class SpeechPlugin: CAPPlugin {
 
     // MARK: - Permissions
 
-    @objc func checkPermissions(_ call: CAPPluginCall) {
-        let speech = SFSpeechRecognizer.authorizationStatus()
-        let mic = AVAudioSession.sharedInstance().recordPermission
-
+    @objc override public func checkPermissions(_ call: CAPPluginCall) {
         call.resolve([
-            "speech": describe(speech),
-            "microphone": describe(mic)
+            "speech": describe(SFSpeechRecognizer.authorizationStatus()),
+            "microphone": describe(AVAudioSession.sharedInstance().recordPermission)
         ])
     }
 
-    @objc func requestPermissions(_ call: CAPPluginCall) {
-        // Both are needed: one to capture audio, one to transcribe it. Asking for
-        // the microphone only after speech is granted keeps the two system prompts
-        // from stacking on top of each other.
+    @objc override public func requestPermissions(_ call: CAPPluginCall) {
+        // Both are needed: one to capture audio, one to transcribe it. Requesting the
+        // microphone only after speech resolves keeps the two system prompts from
+        // stacking on top of each other.
         SFSpeechRecognizer.requestAuthorization { speechStatus in
             AVAudioSession.sharedInstance().requestRecordPermission { micGranted in
                 call.resolve([
@@ -78,7 +87,7 @@ public class SpeechPlugin: CAPPlugin {
         let locale = call.getString("locale") ?? Locale.current.identifier
         recognizer = SFSpeechRecognizer(locale: Locale(identifier: locale))
 
-        guard let recognizer, recognizer.isAvailable else {
+        guard let recognizer = recognizer, recognizer.isAvailable else {
             call.reject("Speech recognition is unavailable for \(locale).")
             return
         }
@@ -99,23 +108,23 @@ public class SpeechPlugin: CAPPlugin {
         try session.setCategory(.record, mode: .measurement, options: [.duckOthers])
         try session.setActive(true, options: .notifyOthersOnDeactivation)
 
-        let request = SFSpeechAudioBufferRecognitionRequest()
-        request.shouldReportPartialResults = true
+        let recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        recognitionRequest.shouldReportPartialResults = true
 
         // Prefer on-device recognition where the model exists: it keeps the reader's
         // notes off Apple's servers and works with no network. Falls back silently.
         if recognizer.supportsOnDeviceRecognition {
-            request.requiresOnDeviceRecognition = true
+            recognitionRequest.requiresOnDeviceRecognition = true
         }
-        self.request = request
+        request = recognitionRequest
 
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
 
-        task = recognizer.recognitionTask(with: request) { [weak self] result, error in
-            guard let self else { return }
+        task = recognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+            guard let self = self else { return }
 
-            if let result {
+            if let result = result {
                 let text = result.bestTranscription.formattedString
                 self.notifyListeners("partialResult", data: ["text": text])
 
@@ -126,11 +135,10 @@ public class SpeechPlugin: CAPPlugin {
                 return
             }
 
-            if let error {
+            if let error = error {
                 // Code 216 is the ordinary "recognition was cancelled" that arrives
                 // whenever the user taps stop, so it isn't surfaced as a failure.
-                let nsError = error as NSError
-                if nsError.code != 216 {
+                if (error as NSError).code != 216 {
                     self.notifyListeners("error", data: ["message": error.localizedDescription])
                 }
                 self.teardown()
@@ -180,8 +188,7 @@ public class SpeechPlugin: CAPPlugin {
     private func describe(_ status: SFSpeechRecognizerAuthorizationStatus) -> String {
         switch status {
         case .authorized: return "granted"
-        case .denied: return "denied"
-        case .restricted: return "denied"
+        case .denied, .restricted: return "denied"
         case .notDetermined: return "prompt"
         @unknown default: return "prompt"
         }

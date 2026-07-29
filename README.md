@@ -46,6 +46,16 @@ open that URL on the device.
 
 To install: **Share → Add to Home Screen**.
 
+## As a real iOS app
+
+There's also a native build — a Capacitor 7 shell with `SFSpeechRecognizer` for real
+in-app dictation and Vision for on-device OCR, which removes both limitations described
+below. **No Mac is required**: GitHub Actions builds the `.ipa` on a free cloud macOS
+runner, and you sign it from Windows with your own Apple ID.
+
+See [IOS-BUILD.md](IOS-BUILD.md) — including an honest comparison of whether it's worth it
+over the PWA, given free-account apps expire every 7 days.
+
 ## Two things worth knowing
 
 **Dictation and the Home Screen don't mix on iOS.** `webkitSpeechRecognition` works in a

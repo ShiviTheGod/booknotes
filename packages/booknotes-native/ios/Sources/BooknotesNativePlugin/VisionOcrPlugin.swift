@@ -16,7 +16,14 @@ import Vision
  * caller to store alongside the untouched image.
  */
 @objc(VisionOcrPlugin)
-public class VisionOcrPlugin: CAPPlugin {
+public class VisionOcrPlugin: CAPPlugin, CAPBridgedPlugin {
+
+    public let identifier = "VisionOcrPlugin"
+    public let jsName = "VisionOcr"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "recognizeText", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "supportedLanguages", returnType: CAPPluginReturnPromise)
+    ]
 
     @objc func recognizeText(_ call: CAPPluginCall) {
         guard let base64 = call.getString("imageBase64") else {
@@ -34,12 +41,13 @@ public class VisionOcrPlugin: CAPPlugin {
         }
 
         let languages = call.getArray("languages", String.self)
+        let orientation = Self.cgOrientation(from: image.imageOrientation)
 
         // Vision is not cheap on a large photo, so keep it off the main thread —
         // the WebView stays responsive while a page is being read.
         DispatchQueue.global(qos: .userInitiated).async {
             let request = VNRecognizeTextRequest { request, error in
-                if let error {
+                if let error = error {
                     call.reject("Text recognition failed: \(error.localizedDescription)")
                     return
                 }
@@ -70,7 +78,7 @@ public class VisionOcrPlugin: CAPPlugin {
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
 
-            if let languages, !languages.isEmpty {
+            if let languages = languages, !languages.isEmpty {
                 request.recognitionLanguages = languages
             }
 
@@ -79,7 +87,7 @@ public class VisionOcrPlugin: CAPPlugin {
             // reads a sideways image and returns nothing usable.
             let handler = VNImageRequestHandler(
                 cgImage: cgImage,
-                orientation: Self.cgOrientation(from: image.imageOrientation),
+                orientation: orientation,
                 options: [:]
             )
 
@@ -96,8 +104,7 @@ public class VisionOcrPlugin: CAPPlugin {
         do {
             let request = VNRecognizeTextRequest()
             request.recognitionLevel = .accurate
-            let languages = try request.supportedRecognitionLanguages()
-            call.resolve(["languages": languages])
+            call.resolve(["languages": try request.supportedRecognitionLanguages()])
         } catch {
             call.resolve(["languages": [String]()])
         }

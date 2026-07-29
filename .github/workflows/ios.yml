@@ -1,0 +1,87 @@
+name: Build iOS app
+
+# Builds an UNSIGNED .ipa on a GitHub-hosted macOS runner.
+#
+# This exists so the app can be built with no Mac at all. macOS runners are free and
+# unmetered on public repositories, and they carry a current Xcode — which is also
+# why the project targets Capacitor 7 rather than the older release an out-of-date
+# local Xcode would have forced.
+#
+# The artifact is deliberately unsigned. Signing in CI needs a paid developer account
+# and exported certificates; instead, Sideloadly or AltStore on your own machine signs
+# it with your free Apple ID at install time. See IOS-BUILD.md.
+
+on:
+  push:
+    branches: [main]
+    # Skip when only web-side files changed — those can't affect the iOS build.
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          pod --version
+
+      - run: npm ci
+
+      - name: Build web assets for the native target
+        # BUILD_TARGET=native switches the Vite base to relative paths and drops the
+        # service worker. Without it the bundle expects to live at /booknotes/ and
+        # resolves nothing under capacitor://localhost.
+        run: npm run build:native
+
+      - name: Sync into the iOS project
+        run: npx cap sync ios
+
+      - name: Install pods
+        working-directory: ios/App
+        run: pod install --repo-update
+
+      - name: Build unsigned archive
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ENABLE_BITCODE=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Package as .ipa
+        working-directory: ios/App
+        # An .ipa is just a zip with the .app inside a Payload/ directory. Building
+        # it by hand avoids `xcodebuild -exportArchive`, which insists on a signing
+        # identity we deliberately don't have.
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry BookNotes-unsigned.ipa Payload
+          ls -lh BookNotes-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BookNotes-unsigned-ipa
+          path: ios/App/BookNotes-unsigned.ipa
+          # Long enough to still be there next time you get round to installing it.
+          retention-days: 90
