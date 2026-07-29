@@ -43,7 +43,7 @@ public class SpeechPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc override public func checkPermissions(_ call: CAPPluginCall) {
         call.resolve([
             "speech": describe(SFSpeechRecognizer.authorizationStatus()),
-            "microphone": describe(AVAudioSession.sharedInstance().recordPermission)
+            "microphone": Self.currentMicrophonePermission()
         ])
     }
 
@@ -52,12 +52,45 @@ public class SpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         // microphone only after speech resolves keeps the two system prompts from
         // stacking on top of each other.
         SFSpeechRecognizer.requestAuthorization { speechStatus in
-            AVAudioSession.sharedInstance().requestRecordPermission { micGranted in
+            Self.requestMicrophonePermission { micGranted in
                 call.resolve([
                     "speech": self.describe(speechStatus),
                     "microphone": micGranted ? "granted" : "denied"
                 ])
             }
+        }
+    }
+
+    // MARK: - Microphone permission
+    //
+    // AVAudioSession.recordPermission and requestRecordPermission were deprecated in
+    // iOS 17 in favour of AVAudioApplication. Building against a current SDK means
+    // taking the new path where available and keeping the old one only as the
+    // pre-iOS-17 fallback the deployment target still requires.
+
+    private static func currentMicrophonePermission() -> String {
+        if #available(iOS 17.0, *) {
+            switch AVAudioApplication.shared.recordPermission {
+            case .granted: return "granted"
+            case .denied: return "denied"
+            case .undetermined: return "prompt"
+            @unknown default: return "prompt"
+            }
+        }
+
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted: return "granted"
+        case .denied: return "denied"
+        case .undetermined: return "prompt"
+        @unknown default: return "prompt"
+        }
+    }
+
+    private static func requestMicrophonePermission(_ completion: @escaping (Bool) -> Void) {
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission(completion: completion)
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission(completion)
         }
     }
 
@@ -190,15 +223,6 @@ public class SpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         case .authorized: return "granted"
         case .denied, .restricted: return "denied"
         case .notDetermined: return "prompt"
-        @unknown default: return "prompt"
-        }
-    }
-
-    private func describe(_ permission: AVAudioSession.RecordPermission) -> String {
-        switch permission {
-        case .granted: return "granted"
-        case .denied: return "denied"
-        case .undetermined: return "prompt"
         @unknown default: return "prompt"
         }
     }

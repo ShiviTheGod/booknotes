@@ -55,7 +55,11 @@ jobs:
 
       - name: Build unsigned archive
         working-directory: ios/App
+        # Deliberately not piped through xcpretty: it swallows Swift compiler
+        # diagnostics, which turns a one-line type error into an unreadable
+        # "BUILD FAILED". Raw output is verbose but says what actually broke.
         run: |
+          set -o pipefail
           xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
@@ -65,8 +69,12 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            ENABLE_BITCODE=NO \
-            | xcpretty && exit ${PIPESTATUS[0]}
+            2>&1 | tee xcodebuild.log
+
+      - name: Surface compiler errors
+        if: failure()
+        working-directory: ios/App
+        run: grep -E "error:|warning: .*(deprecat|unavailable)" xcodebuild.log | head -40 || true
 
       - name: Package as .ipa
         working-directory: ios/App
