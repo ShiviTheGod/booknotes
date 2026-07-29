@@ -14,6 +14,10 @@ export default function AppLayout() {
           <ShelfIcon />
           <span>Shelf</span>
         </NavLink>
+        <NavLink to="/search" className={navClass}>
+          <SearchIcon />
+          <span>Search</span>
+        </NavLink>
         <NavLink to="/stats" className={navClass}>
           <StatsIcon />
           <span>Stats</span>
@@ -40,6 +44,15 @@ function ShelfIcon() {
       <rect x="3" y="4" width="4.5" height="16" rx="1" />
       <rect x="9.5" y="4" width="4.5" height="16" rx="1" />
       <path d="M16.2 5.4l3.6 1 -3.1 15.1 -3.6-1z" />
+    </svg>
+  )
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.6-3.6" strokeLinecap="round" />
     </svg>
   )
 }

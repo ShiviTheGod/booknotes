@@ -32,6 +32,16 @@ class ShelfieDB extends Dexie {
       images: 'id',
       settings: 'key',
     })
+
+    // v2 adds the ocrStatus index. Without it `where('ocrStatus')` throws — IndexedDB
+    // cannot query an unindexed key path — which killed the whole OCR queue: every
+    // photo note stayed stuck on "Reading the text in this photo…" because
+    // listPendingOcr() rejected before any work started. Only the changed table needs
+    // restating; Dexie carries the rest forward and builds the new index on upgrade.
+    this.version(2).stores({
+      notes:
+        'id, bookId, chapterId, type, ocrStatus, createdAt, [bookId+createdAt], [chapterId+createdAt]',
+    })
   }
 }
 
