@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core'
 import { db } from '../data/db'
 import type { Book, Chapter, ImageBlob, Note, Setting } from '../data/types'
 
@@ -80,21 +81,69 @@ export async function buildBackup(): Promise<BackupFile> {
   }
 }
 
-/** Build the backup and hand it to the browser as a download. */
+function backupFilename(): string {
+  return `booknotes-${new Date().toISOString().slice(0, 10)}.json`
+}
+
+/**
+ * Build the backup and get it out of the app.
+ *
+ * Two routes, because the browser one does not work in the installed app:
+ * WKWebView refuses `blob:` URLs on a link with the `download` attribute, a
+ * long-standing WebKit limitation. In the native shell the export button would
+ * simply do nothing — no file, no error — which is a poor property for the only
+ * safety net standing between the reader and losing every note when the app is
+ * deleted. So on iOS the file is written to disk and handed to the share sheet.
+ */
 export async function downloadBackup(): Promise<void> {
-  const backup = await buildBackup()
-  const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' })
+  const json = JSON.stringify(await buildBackup())
+
+  if (Capacitor.isNativePlatform()) {
+    await exportViaShareSheet(json)
+    return
+  }
+
+  const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
 
   const link = document.createElement('a')
   link.href = url
-  link.download = `booknotes-${new Date().toISOString().slice(0, 10)}.json`
+  link.download = backupFilename()
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
 
   // Give the download a moment to start before tearing down the object URL.
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
+}
+
+async function exportViaShareSheet(json: string): Promise<void> {
+  const [{ Filesystem, Directory, Encoding }, { Share }] = await Promise.all([
+    import('@capacitor/filesystem'),
+    import('@capacitor/share'),
+  ])
+
+  const path = backupFilename()
+
+  // Cache rather than Documents: this is a hand-off file, not something the reader
+  // needs to find again inside the app, and iOS may reclaim it once shared.
+  await Filesystem.writeFile({
+    path,
+    data: json,
+    directory: Directory.Cache,
+    encoding: Encoding.UTF8,
+  })
+
+  const { uri } = await Filesystem.getUri({ path, directory: Directory.Cache })
+
+  // The share sheet is what makes the file reachable — Save to Files, iCloud Drive,
+  // AirDrop, mail. Without it the JSON would sit in a sandbox the reader cannot open.
+  await Share.share({
+    title: 'BookNotes backup',
+    text: 'Your BookNotes library.',
+    url: uri,
+    dialogTitle: 'Save your BookNotes backup',
+  })
 }
 
 export interface ImportResult {

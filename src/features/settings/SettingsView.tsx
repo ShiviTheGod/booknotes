@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../data/db'
 import PageHeader from '../../components/PageHeader'
@@ -30,7 +31,11 @@ export default function SettingsView() {
     setError(undefined)
     try {
       await downloadBackup()
-      setMessage('Backup saved. Keep it somewhere outside this device.')
+      setMessage(
+        Capacitor.isNativePlatform()
+          ? 'Choose where to keep it — Files, iCloud Drive, or mail it to yourself. Anywhere but this device.'
+          : 'Backup saved. Keep it somewhere outside this device.',
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export failed.')
     } finally {
@@ -116,6 +121,16 @@ export default function SettingsView() {
           Exports every book, chapter, note, and photo into a single file. This is the only
           copy of your notes that exists outside this device — worth doing now and then.
         </p>
+
+        {Capacitor.isNativePlatform() && (
+          // The single most destructive thing available, and nothing else warns about it:
+          // iOS deletes the app's container along with the app, taking every note with it.
+          // Re-signing the app each week is safe; deleting it is not.
+          <p className={styles.help}>
+            <strong>Before you ever delete BookNotes, export.</strong> Removing the app erases
+            everything in it. Re-signing it each week keeps your notes; deleting does not.
+          </p>
+        )}
 
         <div className={styles.buttonRow}>
           <button
