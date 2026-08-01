@@ -4,6 +4,7 @@ import { installSampleBooks, removeSampleBooks, sampleBookTally } from './seed'
 import { createBook } from './repo/books'
 import { createChapter } from './repo/chapters'
 import { createNote } from './repo/notes'
+import { saveReview } from './repo/reviews'
 
 beforeEach(async () => {
   await Promise.all([
@@ -12,6 +13,7 @@ beforeEach(async () => {
     db.notes.clear(),
     db.images.clear(),
     db.tombstones.clear(),
+    db.reviews.clear(),
   ])
 })
 
@@ -82,6 +84,20 @@ describe('sample books', () => {
     expect(byEntity('book')).toBe(books)
     expect(byEntity('chapter')).toBe(chapters)
     expect(byEntity('note')).toBe(notes)
+  })
+
+  it('does not strand a review behind a removed book', async () => {
+    const mine = await realBook()
+    await saveReview(mine, { rating: 4, body: 'Mine, and it stays.' })
+
+    await installSampleBooks()
+    const sample = (await db.books.toArray()).find((book) => book.id !== mine.id)!
+    await saveReview(sample, { rating: 2, body: 'On a book about to go.' })
+
+    await removeSampleBooks()
+
+    const reviews = await db.reviews.toArray()
+    expect(reviews.map((review) => review.bookId)).toEqual([mine.id])
   })
 
   it('is safe to run twice', async () => {

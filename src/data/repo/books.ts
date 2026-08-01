@@ -87,12 +87,16 @@ export async function markReading(id: string): Promise<void> {
  * Delete a book and everything hanging off it.
  *
  * Runs in one transaction so a failure part-way through cannot leave orphaned
- * chapters or notes pointing at a book that no longer exists.
+ * chapters, notes or a review pointing at a book that no longer exists.
+ *
+ * A review that has been shared stops being reachable here but is not withdrawn from
+ * the friends who could see it — that needs the network, and this has to work on a
+ * train. Stop sharing before deleting the book if that matters.
  */
 export async function deleteBook(id: string): Promise<void> {
   const imageIds: string[] = []
 
-  await db.transaction('rw', db.books, db.chapters, db.notes, db.tombstones, async () => {
+  await db.transaction('rw', db.books, db.chapters, db.notes, db.reviews, db.tombstones, async () => {
     const notes = await db.notes.where('bookId').equals(id).toArray()
     for (const note of notes) {
       if (note.imageBlobId) imageIds.push(note.imageBlobId)
@@ -105,6 +109,9 @@ export async function deleteBook(id: string): Promise<void> {
 
     await db.notes.where('bookId').equals(id).delete()
     await db.chapters.where('bookId').equals(id).delete()
+    // Keyed by book id, so a review left behind is unreachable for good: nothing can
+    // ever open it again, but it still travels in every backup from then on.
+    await db.reviews.delete(id)
     await db.books.delete(id)
 
     // Every removed row needs its own marker, not just the book: the other device
