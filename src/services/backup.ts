@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { db } from '../data/db'
-import type { Book, Chapter, ImageBlob, Note, Setting } from '../data/types'
+import type { Book, Chapter, ImageBlob, Note, Review, Setting } from '../data/types'
 
 /**
  * Whole-library export and import.
@@ -28,6 +28,8 @@ export interface BackupFile {
   /** Blob replaced by a base64 data string; rebuilt on import. */
   images: Array<Omit<ImageBlob, 'blob'> & { data: string }>
   settings: Setting[]
+  /** Optional: absent from files written before reviews existed. */
+  reviews?: Review[]
 }
 
 async function blobToBase64(blob: Blob): Promise<string> {
@@ -54,12 +56,13 @@ function base64ToBlob(data: string, mimeType: string): Blob {
 }
 
 export async function buildBackup(): Promise<BackupFile> {
-  const [books, chapters, notes, images, settings] = await Promise.all([
+  const [books, chapters, notes, images, settings, reviews] = await Promise.all([
     db.books.toArray(),
     db.chapters.toArray(),
     db.notes.toArray(),
     db.images.toArray(),
     db.settings.toArray(),
+    db.reviews.toArray(),
   ])
 
   const encodedImages = await Promise.all(
@@ -78,6 +81,7 @@ export async function buildBackup(): Promise<BackupFile> {
     notes,
     images: encodedImages,
     settings,
+    reviews,
   }
 }
 
@@ -188,7 +192,7 @@ export async function restoreBackup(file: File): Promise<ImportResult> {
   // Array form rather than a table per argument: Dexie's typed overloads stop at five.
   await db.transaction(
     'rw',
-    [db.books, db.chapters, db.notes, db.images, db.settings, db.tombstones],
+    [db.books, db.chapters, db.notes, db.images, db.settings, db.tombstones, db.reviews],
     async () => {
       await Promise.all([
         db.books.clear(),
@@ -196,6 +200,7 @@ export async function restoreBackup(file: File): Promise<ImportResult> {
         db.notes.clear(),
         db.images.clear(),
         db.settings.clear(),
+        db.reviews.clear(),
         // Restoring reinstates rows by their original ids, and any of those ids may
         // have been deleted here since the backup was taken. Leaving the gravestones
         // in place would let the next sync delete the very notes just restored.
@@ -207,6 +212,7 @@ export async function restoreBackup(file: File): Promise<ImportResult> {
       await db.notes.bulkAdd(parsed.notes ?? [])
       await db.images.bulkAdd(images)
       await db.settings.bulkAdd(parsed.settings ?? [])
+      await db.reviews.bulkAdd(parsed.reviews ?? [])
     },
   )
 

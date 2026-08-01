@@ -13,6 +13,7 @@ import BookCover from '../../components/BookCover'
 import PageHeader from '../../components/PageHeader'
 import BookDetailsForm from './BookDetailsForm'
 import Bookmark from './Bookmark'
+import BookReview from './BookReview'
 import styles from './BookDetailView.module.css'
 
 export default function BookDetailView() {
@@ -186,6 +187,8 @@ export default function BookDetailView() {
           </button>
         )}
       </section>
+
+      <BookReview book={book} />
 
       <section className={styles.danger}>
         {confirmingDelete ? (

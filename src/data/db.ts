@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Book, Chapter, ImageBlob, Note, Setting, Tombstone } from './types'
+import type { Book, Chapter, ImageBlob, Note, Review, Setting, Tombstone } from './types'
 
 /**
  * BookNotes' local database.
@@ -22,6 +22,7 @@ class BookNotesDB extends Dexie {
   images!: EntityTable<ImageBlob, 'id'>
   settings!: EntityTable<Setting, 'key'>
   tombstones!: EntityTable<Tombstone, 'id'>
+  reviews!: EntityTable<Review, 'bookId'>
 
   constructor() {
     super('booknotes')
@@ -48,6 +49,14 @@ class BookNotesDB extends Dexie {
     // Purely additive: nothing that already worked reads or writes it.
     this.version(3).stores({
       tombstones: 'id, entity, deletedAt',
+    })
+
+    // v4 adds reviews. They live here rather than only in Supabase so they can be
+    // written offline, survive signing out, and be included in a backup — a review is
+    // the reader's own writing, and losing it with an account would be no better than
+    // losing a note.
+    this.version(4).stores({
+      reviews: 'bookId, bookKey, updatedAt',
     })
   }
 }

@@ -1,0 +1,153 @@
+.section {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--c-rule-soft);
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  margin-bottom: var(--sp-3);
+}
+
+.stars {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-3);
+}
+
+.star,
+.starOn {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+
+  background: none;
+  border: none;
+  font-size: var(--text-2xl);
+  line-height: 1;
+  padding: 0;
+}
+
+.star {
+  color: var(--c-rule);
+}
+
+.starOn {
+  color: var(--c-brass);
+}
+
+.ratingText {
+  margin-left: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--c-ink-faint);
+}
+
+.body {
+  width: 100%;
+  min-height: 7rem;
+  padding: var(--sp-3);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.actions {
+  margin-top: var(--sp-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.save {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-5);
+
+  color: var(--c-paper);
+  background: var(--c-brass);
+  border: none;
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.secondary {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-5);
+
+  color: var(--c-ink);
+  background: none;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.save:disabled,
+.secondary:disabled {
+  opacity: 0.45;
+}
+
+.note {
+  margin-top: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
+
+.error {
+  margin-top: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--c-terracotta);
+}
+
+.friendsTitle {
+  margin-top: var(--sp-5);
+  margin-bottom: var(--sp-3);
+  font-size: var(--text-base);
+}
+
+.friendList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.friendReview {
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule-soft);
+  border-radius: var(--r-md);
+  /* Same margin rule as a note card, so a friend's writing reads as the same kind of
+     object as your own rather than as a notification. */
+  border-left: 3px solid var(--c-rule);
+}
+
+.friendHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+
+.friendName {
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+  overflow-wrap: anywhere;
+}
+
+.friendRating {
+  color: var(--c-brass);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.friendBody {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}

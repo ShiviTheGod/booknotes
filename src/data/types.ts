@@ -117,6 +117,26 @@ export interface Setting {
   value: unknown
 }
 
+/**
+ * Your own writing about a book, meant to be read by someone else.
+ *
+ * Kept apart from notes on purpose, and that separation is the whole safety model of
+ * sharing. Notes are private working material and can carry `ocrText` — the book's own
+ * words, photographed and transcribed. A review is written deliberately, in the
+ * reader's voice, knowing a friend will see it. Only this ever leaves the device.
+ */
+export interface Review {
+  /** One review per book on your shelf, so the local book id is the key. */
+  bookId: string
+  /** Cross-shelf identity, so a friend's review of the same book lines up with yours. */
+  bookKey: string
+  /** 1–5, optional: some books are worth writing about without being ranked. */
+  rating?: number
+  body: string
+  createdAt: string
+  updatedAt: string
+}
+
 /** The three tables sync carries. Images are deliberately not among them. */
 export type SyncEntity = 'book' | 'chapter' | 'note'
 
