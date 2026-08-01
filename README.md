@@ -116,12 +116,42 @@ later without the UI knowing.
   The translator reports what it actually detected, and a page already in your language is
   left alone rather than stored as a reworded "translation" of itself.
 
+## Sync between devices (optional)
+
+Off by default. The app is local-first and stays that way unless you connect it to a
+Supabase project of your own — there is no shared backend and no credentials in this repo.
+
+1. Make a free project at [supabase.com](https://supabase.com)
+2. SQL Editor → paste [supabase/schema.sql](supabase/schema.sql) → Run
+3. In the app: **Settings → Sync between devices** → paste the project URL and the *anon*
+   key → create an account → **Sync now**
+4. Repeat step 3 on the second device with the same account
+
+The anon key belongs in the client; it is the schema's Row Level Security that makes it
+safe, restricting every query to the rows of whoever is signed in.
+
+Three deliberate limits:
+
+- **Manual.** Nothing moves until you press Sync. This is the only code in the app that can
+  remove notes from two devices at once, so it never runs unattended.
+- **Text only.** Books, chapters, notes, extracted text and translations travel; photos stay
+  on the device that took them. They are the bulk of the data and they are pictures of what
+  you were reading. A note synced to your other device shows its text, not its photo.
+- **Last write wins.** With a wrinkle that matters: deletion counts as a write, so a note
+  edited on one device *after* being deleted on the other survives. Always letting deletion
+  win throws away text typed after it; always letting the edit win resurrects deleted notes.
+  The decision is a [pure function with its own tests](src/services/sync/merge.ts).
+
+Deleting anything writes a tombstone, whether or not sync is set up. Without one, the other
+device sees a row you no longer have, assumes you are behind, and pushes it back — the note
+becomes undeletable.
+
 ## Not in v1
 
-Community and social features, accounts, sharing or selling summaries, and AI summarization
-(the seam is there, unused).
+Community and social features, sharing or selling summaries, and AI summarization (the seam
+is there, unused).
 
 ## Roadmap
 
-- Optional Supabase sync so an iPhone and an iPad share one library
 - "AI condense" on the summary view
+- Syncing photos, for anyone willing to spend the storage on it
