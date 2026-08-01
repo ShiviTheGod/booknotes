@@ -153,9 +153,17 @@ and clear on a re-run; the workflow already passes `--repo-update`.
 
 ---
 
-## What is still not native
+## What the installed app gets that the website cannot
 
-Translation. Now that CI builds with a current Xcode the iOS 18 SDK is available, so
-Apple's on-device Translation framework has become reachable — it just isn't wired up yet.
-`TranslationProvider` in [src/services/translation.ts](src/services/translation.ts) is
-still a no-op, and OCR text is tagged with a detected script instead.
+Translation is the clearest case. Every cloud translation service needs an API key, and a
+static site cannot hold one without publishing it — so on the web, extracted text stays in
+the language it was written in. Apple's framework needs no key and no network, and the text
+never leaves the phone, so the installed app translates and the website honestly says it
+cannot.
+
+**Settings → Translation** picks the target language. The list is read from the device, so
+it only ever offers languages that actually work, and the panel says whether the language
+pack is already downloaded or will be fetched on first use.
+
+Needs **iOS 18 or later**. Below that the app reports translation as unavailable and keeps
+extracted text unchanged — nothing else is affected.

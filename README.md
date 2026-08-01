@@ -105,17 +105,23 @@ later without the UI knowing.
   longer on a phone, which is why extraction runs in a background queue.
 - **The 5-note limit is a suggestion.** The counter turns amber past five rather than blocking
   a save — the goal is to nudge toward distilling, not to cut anyone off mid-thought.
-- **Translation is an interface, not an implementation.** A static site can't hold an API key
-  safely, so v1 detects and records the script of extracted text and stops there. Implement
-  `TranslationProvider` and a small serverless proxy to turn it on.
+- **Translation runs on the phone, or not at all.** Every cloud translator needs an API key,
+  and a static site can't hold one without publishing it. The installed iOS app uses Apple's
+  on-device framework — no key, no account, no network, and the text never leaves the device.
+  On the web the provider stays a no-op and extracted text is left in its original language,
+  which beats quietly posting someone's reading notes to a third party. `TranslationProvider`
+  is still the seam if you ever want a cloud one.
+- **The source language is asked for, not guessed.** `detectLanguage()` identifies a writing
+  system, not a language — it can't tell a Czech reader's English book from their Czech one.
+  The translator reports what it actually detected, and a page already in your language is
+  left alone rather than stored as a reworded "translation" of itself.
 
 ## Not in v1
 
-Community and social features, accounts, sharing or selling summaries, AI summarization (the
-seam is there, unused), and real machine translation.
+Community and social features, accounts, sharing or selling summaries, and AI summarization
+(the seam is there, unused).
 
 ## Roadmap
 
 - Optional Supabase sync so an iPhone and an iPad share one library
 - "AI condense" on the summary view
-- Translation via a serverless proxy
