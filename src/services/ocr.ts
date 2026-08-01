@@ -1,6 +1,7 @@
 import { listPendingOcr, updateNote } from '../data/repo/notes'
 import { getImageBlob } from '../data/repo/images'
-import { detectLanguage } from './translation'
+import { getSetting, SETTING_KEYS, defaultUserLanguage } from '../data/repo/settings'
+import { detectLanguage, hasTranslationProvider, translate } from './translation'
 import { VisionOcr, blobToBase64, isNativeIos } from './native/plugins'
 
 /**
@@ -91,15 +92,42 @@ export async function runOcrForNote(noteId: string, imageBlobId: string): Promis
       return
     }
 
+    const lang = detectLanguage(text)
     await updateNote(noteId, {
       ocrStatus: 'done',
       ocrText: text,
-      ocrLang: detectLanguage(text),
+      ocrLang: lang,
       ocrConfidence: Math.round(data.confidence),
     })
+    await translateNote(noteId, text, lang)
   } catch (error) {
     console.error('OCR failed for note', noteId, error)
     await updateNote(noteId, { ocrStatus: 'failed' })
+  }
+}
+
+/**
+ * Add a translation to a note whose text is not in the reader's language.
+ *
+ * Runs after the extracted text is already saved, and swallows its own failures on
+ * purpose. Translation is a bonus on top of the note; if the language pack is missing
+ * or the pair is unsupported, the right outcome is a note with its original text
+ * intact, not a photo marked as failed.
+ */
+async function translateNote(noteId: string, text: string, sourceLang: string): Promise<void> {
+  if (!hasTranslationProvider() || !text) return
+
+  try {
+    const target = await getSetting(SETTING_KEYS.userLanguage, defaultUserLanguage())
+    const translated = await translate(text, target, sourceLang)
+
+    // Unchanged means it was already in the reader's language. Storing it would put a
+    // redundant "Translation" block under every note.
+    if (translated && translated !== text) {
+      await updateNote(noteId, { translatedText: translated })
+    }
+  } catch (error) {
+    console.error('Translation failed for note', noteId, error)
   }
 }
 
@@ -153,16 +181,19 @@ async function runVisionOcr(noteId: string, blob: Blob): Promise<void> {
     const base64 = await blobToBase64(blob)
     const { text, confidence } = await VisionOcr.recognizeText({ imageBase64: base64 })
     const trimmed = text.trim()
+    const lang = trimmed ? detectLanguage(trimmed) : undefined
 
     await updateNote(noteId, {
       ocrStatus: 'done',
       ocrText: trimmed,
       // An empty result is a legitimate outcome (a photo with no legible text),
       // so it is recorded as done rather than retried forever.
-      ocrLang: trimmed ? detectLanguage(trimmed) : undefined,
+      ocrLang: lang,
       // Vision reports 0–1; Tesseract reports 0–100. Normalize so the UI has one scale.
       ocrConfidence: trimmed ? Math.round(confidence * 100) : undefined,
     })
+
+    if (trimmed && lang) await translateNote(noteId, trimmed, lang)
   } catch (error) {
     console.error('Vision OCR failed for note', noteId, error)
     await updateNote(noteId, { ocrStatus: 'failed' })

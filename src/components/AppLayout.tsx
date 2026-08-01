@@ -1,13 +1,34 @@
-import { useEffect, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { watchKeyboard } from '../services/keyboard'
 import styles from './AppLayout.module.css'
 
 /** Bottom tab bar + scrollable content area. Mobile-first; widens to a centred column on tablets. */
 export default function AppLayout() {
   const [keyboardOpen, setKeyboardOpen] = useState(false)
+  const scrollRef = useRef<HTMLElement>(null)
+  const { pathname } = useLocation()
 
   useEffect(() => watchKeyboard(setKeyboardOpen), [])
+
+  // One scroll container serves every screen, so without this a new screen opens at
+  // whatever offset the previous one was left at — tap a book from far down the shelf
+  // and its page begins halfway through.
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }, [pathname])
+
+  // What iOS calls keyboardDismissMode .onDrag. touchmove is used rather than scroll
+  // because it is unambiguously the reader's finger: the browser scrolls this
+  // container itself when a field is focused, and reacting to that would dismiss the
+  // keyboard the instant it opened.
+  function dismissKeyboardOnDrag() {
+    if (!keyboardOpen) return
+    const focused = document.activeElement
+    if (focused instanceof HTMLInputElement || focused instanceof HTMLTextAreaElement) {
+      focused.blur()
+    }
+  }
 
   return (
     <div className={styles.shell} data-keyboard={keyboardOpen ? 'open' : 'closed'}>
@@ -17,7 +38,7 @@ export default function AppLayout() {
         The width-limited column sits inside it so that on a wide window the whole
         window scrolls, not just the centre strip.
       */}
-      <main className={styles.scroll}>
+      <main className={styles.scroll} ref={scrollRef} onTouchMove={dismissKeyboardOnDrag}>
         <div className={styles.content}>
           <Outlet />
         </div>

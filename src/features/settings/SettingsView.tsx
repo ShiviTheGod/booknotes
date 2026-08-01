@@ -7,6 +7,7 @@ import { downloadBackup, restoreBackup } from '../../services/backup'
 import { resetToSeed } from '../../data/seed'
 import { isIos, isStandalone } from '../../services/speech'
 import NativeDiagnostics from './NativeDiagnostics'
+import TranslationSettings from './TranslationSettings'
 import styles from './SettingsView.module.css'
 
 export default function SettingsView() {
@@ -114,6 +115,8 @@ export default function SettingsView() {
           </p>
         </section>
       )}
+
+      <TranslationSettings />
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Backup</h2>

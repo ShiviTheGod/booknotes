@@ -28,6 +28,28 @@
   gap: var(--sp-3);
 }
 
+.field {
+  display: block;
+  margin-bottom: var(--sp-3);
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--c-ink-soft);
+}
+
+.select {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+}
+
 .primaryButton {
   min-height: var(--tap-min);
   padding: 0 var(--sp-5);

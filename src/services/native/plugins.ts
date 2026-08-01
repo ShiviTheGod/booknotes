@@ -34,8 +34,29 @@ export interface VisionOcrPluginApi {
   supportedLanguages(): Promise<{ languages: string[] }>
 }
 
+/**
+ * `unavailable` means the OS is too old for the framework at all (pre-iOS 18);
+ * `unsupported` means it is there but does not handle this language pair.
+ * `supported` means it would work after downloading a language pack, which the
+ * system offers the first time a pair is used.
+ */
+export type TranslationStatus = 'installed' | 'supported' | 'unsupported' | 'unavailable'
+
+export interface TranslationPluginApi {
+  availability(options: { target: string; source?: string }): Promise<{
+    status: TranslationStatus
+  }>
+  supportedLanguages(): Promise<{ languages: string[] }>
+  translate(options: { text: string; target: string; source?: string }): Promise<{
+    text: string
+    /** What the framework detected the original to be, e.g. 'en'. */
+    sourceLanguage: string
+  }>
+}
+
 export const Speech = registerPlugin<SpeechPluginApi>('Speech')
 export const VisionOcr = registerPlugin<VisionOcrPluginApi>('VisionOcr')
+export const NativeTranslation = registerPlugin<TranslationPluginApi>('Translation')
 
 /** True only inside the Capacitor iOS shell — false in any browser, including iOS Safari. */
 export function isNativeIos(): boolean {

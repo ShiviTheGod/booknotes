@@ -1,8 +1,17 @@
 import { useState } from 'react'
 import { runOcrSelfTest, type OcrSelfTest } from '../../services/ocr'
 import { checkSpeechAvailability, isIos, isStandalone } from '../../services/speech'
+import { hasTranslationProvider, translate } from '../../services/translation'
+import {
+  defaultUserLanguage,
+  getSetting,
+  SETTING_KEYS,
+} from '../../data/repo/settings'
 import { Capacitor } from '@capacitor/core'
 import styles from './SettingsView.module.css'
+
+/** English, so there is always something to translate away from. */
+const TRANSLATION_SAMPLE = 'The book was better than I expected.'
 
 /**
  * Reports which engines are actually live, and runs OCR on a known sample.
@@ -17,6 +26,8 @@ export default function NativeDiagnostics() {
   const [result, setResult] = useState<OcrSelfTest>()
   const [error, setError] = useState<string>()
   const [running, setRunning] = useState(false)
+  const [translation, setTranslation] = useState<string>()
+  const [translating, setTranslating] = useState(false)
 
   const platform = Capacitor.getPlatform()
   const native = Capacitor.isNativePlatform()
@@ -33,6 +44,26 @@ export default function NativeDiagnostics() {
       setError(caught instanceof Error ? caught.message : String(caught))
     } finally {
       setRunning(false)
+    }
+  }
+
+  async function runTranslationTest() {
+    setTranslating(true)
+    setTranslation(undefined)
+    setError(undefined)
+
+    try {
+      const target = await getSetting(SETTING_KEYS.userLanguage, defaultUserLanguage())
+      const output = await translate(TRANSLATION_SAMPLE, target, 'en')
+      // The provider returns the input untouched when it decides no translation was
+      // needed, which is a meaningful answer rather than a failure.
+      setTranslation(
+        output === TRANSLATION_SAMPLE ? '(unchanged — already in your language)' : output,
+      )
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught))
+    } finally {
+      setTranslating(false)
     }
   }
 
@@ -58,17 +89,45 @@ export default function NativeDiagnostics() {
               : 'unavailable — use the keyboard mic'
           }
         />
+        <Row
+          label="Translation"
+          value={hasTranslationProvider() ? 'Apple, on-device' : 'off — text stays as written'}
+        />
         {isIos() && !native && <Row label="Note" value="Safari, not the installed app" />}
       </dl>
 
-      <button
-        type="button"
-        className={styles.secondaryButton}
-        onClick={() => void runTest()}
-        disabled={running}
-      >
-        {running ? 'Reading…' : 'Run text-extraction test'}
-      </button>
+      <div className={styles.buttonRow}>
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={() => void runTest()}
+          disabled={running}
+        >
+          {running ? 'Reading…' : 'Run text-extraction test'}
+        </button>
+
+        {hasTranslationProvider() && (
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => void runTranslationTest()}
+            disabled={translating}
+          >
+            {translating ? 'Translating…' : 'Run translation test'}
+          </button>
+        )}
+      </div>
+
+      {translation && (
+        <div className={styles.diagResult}>
+          <Row label="Sample" value={TRANSLATION_SAMPLE} />
+          <Row label="Came back as" value={translation} />
+          <p className={styles.help}>
+            The first run may pause while iOS downloads the language. After that it works
+            with no network at all.
+          </p>
+        </div>
+      )}
 
       {error && <p className={styles.error}>{error}</p>}
 
