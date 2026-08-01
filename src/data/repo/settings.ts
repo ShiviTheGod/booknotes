@@ -16,8 +16,6 @@ export const SETTING_KEYS = {
   userLanguage: 'userLanguage',
   /** Last shelf view the user chose: 'genre' | 'timeline'. */
   shelfView: 'shelfView',
-  /** Whether the seed library has been installed, so it only ever happens once. */
-  seeded: 'seeded',
 } as const
 
 export function defaultUserLanguage(): string {

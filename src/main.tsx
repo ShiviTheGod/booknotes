@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
-import { seedIfEmpty } from './data/seed'
 import { defaultUserLanguage, getSetting, SETTING_KEYS } from './data/repo/settings'
 import { initTranslation } from './services/translation'
 import { processOcrQueue } from './services/ocr'
@@ -22,32 +21,26 @@ async function startBackgroundWork(): Promise<void> {
   await processOcrQueue()
 }
 
-// Install the starter library before first paint so the shelf never flashes empty.
-// A failure here is not fatal — the app works fine with no books.
-seedIfEmpty()
-  .catch((error) => {
-    console.error('Could not install the starter library:', error)
-  })
-  .finally(() => {
-    const container = document.getElementById('root')
-    if (!container) throw new Error('Root element missing from index.html')
+const container = document.getElementById('root')
+if (!container) throw new Error('Root element missing from index.html')
 
-    createRoot(container).render(
-      <StrictMode>
-        {/*
-          HashRouter, not BrowserRouter: GitHub Pages serves static files and returns a
-          404 for any deep link that is not a real file on disk. Hash routing sidesteps
-          that entirely, and the URL bar is invisible in a Home Screen app anyway.
-        */}
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </StrictMode>,
-    )
+// Nothing is written to the database before first paint any more. A new library
+// starts empty and the shelf says so; the sample books are a button in Settings.
+createRoot(container).render(
+  <StrictMode>
+    {/*
+      HashRouter, not BrowserRouter: GitHub Pages serves static files and returns a
+      404 for any deep link that is not a real file on disk. Hash routing sidesteps
+      that entirely, and the URL bar is invisible in a Home Screen app anyway.
+    */}
+    <HashRouter>
+      <App />
+    </HashRouter>
+  </StrictMode>,
+)
 
-    startBackgroundWork().catch((error) => {
-      // Neither of these is worth interrupting anyone over: the app is fully usable
-      // with untranslated notes and an OCR queue that retries on the next photo.
-      console.error('Background work could not start:', error)
-    })
-  })
+startBackgroundWork().catch((error) => {
+  // Neither of these is worth interrupting anyone over: the app is fully usable
+  // with untranslated notes and an OCR queue that retries on the next photo.
+  console.error('Background work could not start:', error)
+})

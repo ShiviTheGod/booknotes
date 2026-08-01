@@ -1,18 +1,27 @@
 import { db, newId, nowIso } from './db'
 import type { Book, Chapter, Note } from './types'
-import { SETTING_KEYS, getSetting, setSetting } from './repo/settings'
+import { deleteBook } from './repo/books'
 
 /**
- * A small starter library.
+ * A small starter library, installed only when asked for.
  *
- * This exists so the shelf, summary, and stats screens have something real to render
- * before any network code is wired up. It installs exactly once — after that the
- * `seeded` flag keeps it out of the way, so it never fights with real data.
+ * It existed originally so the shelf, summary, and stats screens had something real
+ * to render before any network code was wired up, and it went in automatically on
+ * first run. That has outlived its purpose: a first launch now belongs to whoever is
+ * holding the phone, and eight books they did not choose are clutter to be cleared,
+ * not a welcome. Settings still offers them for anyone who wants to look around.
  *
  * Covers come from Open Library's cover CDN, which is addressable by ISBN with no
  * lookup call. If a cover 404s the UI falls back to a typographic cover, so a missing
  * image is a cosmetic non-event rather than a broken shelf.
  */
+
+/**
+ * Marks a book as one of these samples, in a field real books already use for their
+ * origin. It is what makes "remove the samples" an exact operation rather than a
+ * guess at titles — and why removing them can never take a real book with it.
+ */
+const SEED_PREFIX = 'seed:'
 
 interface SeedBook {
   title: string
@@ -195,17 +204,7 @@ function noteTimestamp(anchorDate: string, dayOffset: number, index: number): st
   return date.toISOString()
 }
 
-export async function seedIfEmpty(): Promise<void> {
-  const alreadySeeded = await getSetting(SETTING_KEYS.seeded, false)
-  if (alreadySeeded) return
-
-  // Belt and braces: never seed on top of real data.
-  const existingCount = await db.books.count()
-  if (existingCount > 0) {
-    await setSetting(SETTING_KEYS.seeded, true)
-    return
-  }
-
+export async function installSampleBooks(): Promise<void> {
   const books: Book[] = []
   const chapters: Chapter[] = []
   const notes: Note[] = []
@@ -228,7 +227,7 @@ export async function seedIfEmpty(): Promise<void> {
         ? new Date(`${seed.finishedOn}T21:00:00.000Z`).toISOString()
         : undefined,
       source: 'manual',
-      externalId: `seed:${seed.isbn}`,
+      externalId: `${SEED_PREFIX}${seed.isbn}`,
       createdAt: timestamp,
       updatedAt: timestamp,
     })
@@ -259,25 +258,39 @@ export async function seedIfEmpty(): Promise<void> {
     })
   })
 
-  await db.transaction('rw', db.books, db.chapters, db.notes, db.settings, async () => {
+  await db.transaction('rw', db.books, db.chapters, db.notes, async () => {
     await db.books.bulkAdd(books)
     await db.chapters.bulkAdd(chapters)
     await db.notes.bulkAdd(notes)
   })
-
-  await setSetting(SETTING_KEYS.seeded, true)
 }
 
-/** Wipe everything and reinstall the starter library. Exposed on the Settings screen. */
-export async function resetToSeed(): Promise<void> {
-  await db.transaction('rw', db.books, db.chapters, db.notes, db.images, db.settings, async () => {
-    await Promise.all([
-      db.books.clear(),
-      db.chapters.clear(),
-      db.notes.clear(),
-      db.images.clear(),
-      db.settings.clear(),
-    ])
-  })
-  await seedIfEmpty()
+function listSampleBooks(): Promise<Book[]> {
+  return db.books.filter((book) => book.externalId?.startsWith(SEED_PREFIX) === true).toArray()
+}
+
+/** What removing them would cost, so the confirmation can say it rather than imply it. */
+export async function sampleBookTally(): Promise<{ books: number; notes: number }> {
+  const books = await listSampleBooks()
+  if (books.length === 0) return { books: 0, notes: 0 }
+
+  const ids = new Set(books.map((book) => book.id))
+  const notes = await db.notes.filter((note) => ids.has(note.bookId)).count()
+  return { books: books.length, notes }
+}
+
+/**
+ * Take the samples back off the shelf.
+ *
+ * One `deleteBook` per book rather than a bulk clear, which is slower and entirely
+ * deliberate: that path also removes the chapters, notes and images hanging off each
+ * one and leaves a tombstone for every row. A bulk clear would tidy this device and
+ * let the next sync pull all eight straight back from the other one.
+ */
+export async function removeSampleBooks(): Promise<number> {
+  const books = await listSampleBooks()
+  for (const book of books) {
+    await deleteBook(book.id)
+  }
+  return books.length
 }

@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../data/db'
 import PageHeader from '../../components/PageHeader'
 import { downloadBackup, restoreBackup } from '../../services/backup'
-import { resetToSeed } from '../../data/seed'
+import { installSampleBooks, removeSampleBooks, sampleBookTally } from '../../data/seed'
 import { isIos, isStandalone } from '../../services/speech'
 import NativeDiagnostics from './NativeDiagnostics'
 import TranslationSettings from './TranslationSettings'
@@ -22,11 +22,15 @@ export default function SettingsView() {
     return { books, notes, images }
   }, [])
 
+  // Re-runs whenever books or notes change, so the tally cannot go stale behind a
+  // deletion made on the book screen.
+  const samples = useLiveQuery(sampleBookTally, [])
+
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [busy, setBusy] = useState<'export' | 'import' | 'reset'>()
+  const [busy, setBusy] = useState<'export' | 'import' | 'samples'>()
   const [message, setMessage] = useState<string>()
   const [error, setError] = useState<string>()
-  const [confirmingReset, setConfirmingReset] = useState(false)
+  const [confirmingRemove, setConfirmingRemove] = useState(false)
 
   async function handleExport() {
     setBusy('export')
@@ -71,13 +75,28 @@ export default function SettingsView() {
     }
   }
 
-  async function handleReset() {
-    setBusy('reset')
+  async function handleRemoveSamples() {
+    setBusy('samples')
     setError(undefined)
     try {
-      await resetToSeed()
-      setMessage('Library reset to the sample books.')
-      setConfirmingReset(false)
+      const removed = await removeSampleBooks()
+      setMessage(`Removed ${removed} sample ${removed === 1 ? 'book' : 'books'}.`)
+      setConfirmingRemove(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not remove them.')
+    } finally {
+      setBusy(undefined)
+    }
+  }
+
+  async function handleAddSamples() {
+    setBusy('samples')
+    setError(undefined)
+    try {
+      await installSampleBooks()
+      setMessage('Sample books added to your shelf.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add them.')
     } finally {
       setBusy(undefined)
     }
@@ -171,38 +190,67 @@ export default function SettingsView() {
       {error && <p className={styles.error}>{error}</p>}
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Sample library</h2>
-        <p className={styles.help}>
-          Wipes everything and reinstalls the eight sample books. Useful for starting over,
-          destructive if you have real notes — export first.
-        </p>
+        <h2 className={styles.sectionTitle}>Sample books</h2>
 
-        {confirmingReset ? (
-          <div className={styles.buttonRow}>
+        {samples && samples.books > 0 ? (
+          <>
+            <p className={styles.help}>
+              Eight books that came with the app to show what a full shelf looks like.
+              Clearing them leaves everything you added untouched — they are removed by the
+              mark they were installed with, not by title.
+            </p>
+
+            {confirmingRemove ? (
+              <>
+                <p className={styles.help}>
+                  Removes {samples.books} {samples.books === 1 ? 'book' : 'books'} and the{' '}
+                  {samples.notes} {samples.notes === 1 ? 'note' : 'notes'} that came with them.
+                  If you have written notes of your own on any of these, those go too.
+                </p>
+                <div className={styles.buttonRow}>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    onClick={() => setConfirmingRemove(false)}
+                  >
+                    Keep them
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.dangerButton}
+                    onClick={() => void handleRemoveSamples()}
+                    disabled={busy !== undefined}
+                  >
+                    {busy === 'samples' ? 'Removing…' : 'Remove them'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => setConfirmingRemove(true)}
+              >
+                Clear the {samples.books} sample books
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <p className={styles.help}>
+              Eight books with chapters and notes already in them, for seeing how the shelf,
+              summaries and stats look before your own library has filled up. They add
+              alongside your books and can be cleared again here.
+            </p>
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() => setConfirmingReset(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className={styles.dangerButton}
-              onClick={() => void handleReset()}
+              onClick={() => void handleAddSamples()}
               disabled={busy !== undefined}
             >
-              {busy === 'reset' ? 'Resetting…' : 'Erase and reset'}
+              {busy === 'samples' ? 'Adding…' : 'Add the sample books'}
             </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={() => setConfirmingReset(true)}
-          >
-            Reset library
-          </button>
+          </>
         )}
       </section>
 
