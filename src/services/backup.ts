@@ -185,13 +185,10 @@ export async function restoreBackup(file: File): Promise<ImportResult> {
     blob: base64ToBlob(data, rest.mimeType),
   }))
 
+  // Array form rather than a table per argument: Dexie's typed overloads stop at five.
   await db.transaction(
     'rw',
-    db.books,
-    db.chapters,
-    db.notes,
-    db.images,
-    db.settings,
+    [db.books, db.chapters, db.notes, db.images, db.settings, db.tombstones],
     async () => {
       await Promise.all([
         db.books.clear(),
@@ -199,6 +196,10 @@ export async function restoreBackup(file: File): Promise<ImportResult> {
         db.notes.clear(),
         db.images.clear(),
         db.settings.clear(),
+        // Restoring reinstates rows by their original ids, and any of those ids may
+        // have been deleted here since the backup was taken. Leaving the gravestones
+        // in place would let the next sync delete the very notes just restored.
+        db.tombstones.clear(),
       ])
 
       await db.books.bulkAdd(parsed.books ?? [])

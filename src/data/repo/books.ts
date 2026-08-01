@@ -1,6 +1,7 @@
 import { db, newId, nowIso } from '../db'
 import type { Book, BookStatus } from '../types'
 import { deleteImage } from './images'
+import { recordTombstone, recordTombstones } from './tombstones'
 
 export type NewBook = Omit<Book, 'id' | 'createdAt' | 'updatedAt' | 'status'> &
   Partial<Pick<Book, 'status'>>
@@ -64,7 +65,7 @@ export async function markReading(id: string): Promise<void> {
 export async function deleteBook(id: string): Promise<void> {
   const imageIds: string[] = []
 
-  await db.transaction('rw', db.books, db.chapters, db.notes, async () => {
+  await db.transaction('rw', db.books, db.chapters, db.notes, db.tombstones, async () => {
     const notes = await db.notes.where('bookId').equals(id).toArray()
     for (const note of notes) {
       if (note.imageBlobId) imageIds.push(note.imageBlobId)
@@ -73,9 +74,23 @@ export async function deleteBook(id: string): Promise<void> {
     const book = await db.books.get(id)
     if (book?.coverBlobId) imageIds.push(book.coverBlobId)
 
+    const chapters = await db.chapters.where('bookId').equals(id).toArray()
+
     await db.notes.where('bookId').equals(id).delete()
     await db.chapters.where('bookId').equals(id).delete()
     await db.books.delete(id)
+
+    // Every removed row needs its own marker, not just the book: the other device
+    // deletes by id and knows nothing about what hung off what.
+    await recordTombstones(
+      'note',
+      notes.map((note) => note.id),
+    )
+    await recordTombstones(
+      'chapter',
+      chapters.map((chapter) => chapter.id),
+    )
+    await recordTombstone('book', id)
   })
 
   // Blobs are cleaned up after the transaction commits: the images table is large,

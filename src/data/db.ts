@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Book, Chapter, ImageBlob, Note, Setting } from './types'
+import type { Book, Chapter, ImageBlob, Note, Setting, Tombstone } from './types'
 
 /**
  * BookNotes' local database.
@@ -21,6 +21,7 @@ class BookNotesDB extends Dexie {
   notes!: EntityTable<Note, 'id'>
   images!: EntityTable<ImageBlob, 'id'>
   settings!: EntityTable<Setting, 'key'>
+  tombstones!: EntityTable<Tombstone, 'id'>
 
   constructor() {
     super('booknotes')
@@ -41,6 +42,12 @@ class BookNotesDB extends Dexie {
     this.version(2).stores({
       notes:
         'id, bookId, chapterId, type, ocrStatus, createdAt, [bookId+createdAt], [chapterId+createdAt]',
+    })
+
+    // v3 adds the tombstone table that sync needs to carry deletions between devices.
+    // Purely additive: nothing that already worked reads or writes it.
+    this.version(3).stores({
+      tombstones: 'id, entity, deletedAt',
     })
   }
 }

@@ -1,6 +1,7 @@
 import { db, newId, nowIso } from '../db'
 import type { Chapter } from '../types'
 import { deleteImage } from './images'
+import { recordTombstone, recordTombstones } from './tombstones'
 
 /** Chapters for a book, in reading order. */
 export function listChapters(bookId: string): Promise<Chapter[]> {
@@ -34,20 +35,27 @@ async function nextChapterNumber(bookId: string): Promise<number> {
 }
 
 export async function updateChapter(id: string, changes: Partial<Chapter>): Promise<void> {
-  await db.chapters.update(id, changes)
+  // Stamped so sync can tell which side of a conflict is the newer one.
+  await db.chapters.update(id, { ...changes, updatedAt: nowIso() })
 }
 
 /** Delete a chapter along with its notes and their images. */
 export async function deleteChapter(id: string): Promise<void> {
   const imageIds: string[] = []
 
-  await db.transaction('rw', db.chapters, db.notes, async () => {
+  await db.transaction('rw', db.chapters, db.notes, db.tombstones, async () => {
     const notes = await db.notes.where('chapterId').equals(id).toArray()
     for (const note of notes) {
       if (note.imageBlobId) imageIds.push(note.imageBlobId)
     }
     await db.notes.where('chapterId').equals(id).delete()
     await db.chapters.delete(id)
+
+    await recordTombstones(
+      'note',
+      notes.map((note) => note.id),
+    )
+    await recordTombstone('chapter', id)
   })
 
   await Promise.all(imageIds.map(deleteImage))

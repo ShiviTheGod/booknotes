@@ -48,6 +48,12 @@ export interface Chapter {
   number: number
   title: string
   createdAt: string
+  /**
+   * Optional because chapters predate sync and existing rows have none. Sync falls
+   * back to createdAt when it is missing, which is correct: a chapter that was never
+   * edited has not changed since it was made.
+   */
+  updatedAt?: string
 }
 
 export interface Note {
@@ -102,4 +108,25 @@ export interface ImageBlob {
 export interface Setting {
   key: string
   value: unknown
+}
+
+/** The three tables sync carries. Images are deliberately not among them. */
+export type SyncEntity = 'book' | 'chapter' | 'note'
+
+/**
+ * A record that something was deleted here.
+ *
+ * Without these, deleting on one device cannot reach the other: the second device
+ * would see a row it still has, decide the first is simply missing it, and push it
+ * straight back. The row would be undeletable.
+ *
+ * Kept in their own table rather than as a `deletedAt` column so that every existing
+ * query stays as it is — a soft-delete column would mean remembering to filter it out
+ * in a dozen places, and forgetting once means deleted notes reappearing in the UI.
+ */
+export interface Tombstone {
+  /** The deleted row's own id. UUIDs are unique across tables, so this is safe as a key. */
+  id: string
+  entity: SyncEntity
+  deletedAt: string
 }

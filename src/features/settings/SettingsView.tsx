@@ -8,6 +8,7 @@ import { resetToSeed } from '../../data/seed'
 import { isIos, isStandalone } from '../../services/speech'
 import NativeDiagnostics from './NativeDiagnostics'
 import TranslationSettings from './TranslationSettings'
+import SyncSettings from './SyncSettings'
 import styles from './SettingsView.module.css'
 
 export default function SettingsView() {
@@ -203,6 +204,8 @@ export default function SettingsView() {
           </button>
         )}
       </section>
+
+      <SyncSettings />
 
       <NativeDiagnostics />
 

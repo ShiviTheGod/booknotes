@@ -1,6 +1,7 @@
 import { db, newId, nowIso } from '../db'
 import type { Note, NoteType, OcrStatus } from '../types'
 import { deleteImage } from './images'
+import { recordTombstone } from './tombstones'
 
 /**
  * The "up to ~5 key ideas per chapter" guideline.
@@ -66,6 +67,7 @@ export async function updateNote(id: string, changes: Partial<Note>): Promise<vo
 export async function deleteNote(id: string): Promise<void> {
   const note = await db.notes.get(id)
   await db.notes.delete(id)
+  await recordTombstone('note', id)
   if (note?.imageBlobId) await deleteImage(note.imageBlobId)
 }
 

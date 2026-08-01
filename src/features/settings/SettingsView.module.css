@@ -185,3 +185,26 @@
   font-size: var(--text-xs);
   color: var(--c-ink-faint);
 }
+
+.subTitle {
+  margin-top: var(--sp-5);
+  margin-bottom: var(--sp-2);
+  font-size: var(--text-base);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+}
+
+.help code {
+  padding: 1px 4px;
+  background: var(--c-paper-deep);
+  border-radius: var(--r-sm);
+  font-size: 0.95em;
+}
