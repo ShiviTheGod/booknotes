@@ -122,6 +122,18 @@
   margin: 0 auto var(--sp-5);
 }
 
+.emptyAside {
+  margin-top: var(--sp-5);
+  color: var(--c-ink-faint);
+  font-size: var(--text-xs);
+}
+
+.emptyLink {
+  color: var(--c-brass);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .emptyAction {
   display: inline-flex;
   align-items: center;

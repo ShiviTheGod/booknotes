@@ -226,6 +226,15 @@ function EmptyShelf() {
       <Link to="/add" className={styles.emptyAction}>
         Add your first book
       </Link>
+
+      {/* The one moment this is worth saying. Someone with years of reading behind them
+          should not have to find out by accident that they can bring it all in at once. */}
+      <p className={styles.emptyAside}>
+        Already have a library elsewhere?{' '}
+        <Link to="/settings" className={styles.emptyLink}>
+          Import a Goodreads export
+        </Link>
+      </p>
     </div>
   )
 }

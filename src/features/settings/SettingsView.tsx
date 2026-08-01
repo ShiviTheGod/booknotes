@@ -7,6 +7,7 @@ import { downloadBackup, restoreBackup } from '../../services/backup'
 import { installSampleBooks, removeSampleBooks, sampleBookTally } from '../../data/seed'
 import { isIos, isStandalone } from '../../services/speech'
 import NativeDiagnostics from './NativeDiagnostics'
+import LibraryImport from './LibraryImport'
 import TranslationSettings from './TranslationSettings'
 import SyncSettings from './SyncSettings'
 import FriendsSettings from './FriendsSettings'
@@ -136,6 +137,8 @@ export default function SettingsView() {
           </p>
         </section>
       )}
+
+      <LibraryImport />
 
       <TranslationSettings />
 
