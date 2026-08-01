@@ -1,5 +1,5 @@
 /**
- * Generates the app icons.
+ * Generates the app icons and the iOS launch image.
  *
  * Written as a script rather than committing opaque binaries so the icon can be
  * adjusted and regenerated: change the colours or geometry below and re-run
@@ -15,7 +15,10 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'public')
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+const WEB_DIR = join(ROOT, 'public')
+const ICON_SET = join(ROOT, 'ios', 'App', 'App', 'Assets.xcassets', 'AppIcon.appiconset')
+const SPLASH_SET = join(ROOT, 'ios', 'App', 'App', 'Assets.xcassets', 'Splash.imageset')
 
 /* ---------------------------------------------------------------- palette */
 
@@ -23,6 +26,11 @@ const BRASS = [0x9c, 0x6f, 0x31]
 const PAPER = [0xfa, 0xf4, 0xe8]
 const RULE = [0xc9, 0xa8, 0x80]
 const RIBBON = [0xe0, 0xbd, 0x4a]
+
+/** --c-paper, and the same value as `backgroundColor` in capacitor.config.ts, so
+ *  the launch image and the web view behind it are literally the same colour and
+ *  the hand-off between them is invisible. */
+const PAPER_BG = [0xf5, 0xef, 0xe3]
 
 /* --------------------------------------------------------------- geometry */
 /* All shapes are defined in a 0-100 space and scaled to the output size. */
@@ -101,12 +109,45 @@ function sample(x, y) {
   return BRASS
 }
 
+/* ------------------------------------------------------------ launch image */
+
+/* The same emblem again, shrunk into a rounded tile on a paper field. Repeating the
+ * icon rather than inventing a second piece of artwork is the point: the tile the
+ * finger just tapped stays on screen while the web view boots, so the launch reads
+ * as the app opening rather than as a separate loading screen. */
+
+const TILE_MIN = 35
+const TILE_MAX = 65
+/* 22% of the tile's width — the proportion iOS uses to round an app icon, so the
+ * shape matches the one on the Home Screen. */
+const TILE_RADIUS = (TILE_MAX - TILE_MIN) * 0.22
+
+function inRoundedTile(x, y) {
+  if (x < TILE_MIN || x > TILE_MAX || y < TILE_MIN || y > TILE_MAX) return false
+
+  const insetMin = TILE_MIN + TILE_RADIUS
+  const insetMax = TILE_MAX - TILE_RADIUS
+  const cornerX = x < insetMin ? insetMin : x > insetMax ? insetMax : null
+  const cornerY = y < insetMin ? insetMin : y > insetMax ? insetMax : null
+  if (cornerX === null || cornerY === null) return true
+
+  return Math.hypot(x - cornerX, y - cornerY) <= TILE_RADIUS
+}
+
+function sampleSplash(x, y) {
+  if (!inRoundedTile(x, y)) return PAPER_BG
+
+  const scale = 100 / (TILE_MAX - TILE_MIN)
+  return sample((x - TILE_MIN) * scale, (y - TILE_MIN) * scale)
+}
+
 /* -------------------------------------------------------------- rasterize */
 
 const SUPERSAMPLE = 3 // 3x3 per pixel, enough to keep the curved page edges smooth
 
-function renderRgba(size) {
-  const pixels = Buffer.alloc(size * size * 4)
+/** `channels` is 4 for RGBA or 3 for RGB; every pixel is opaque either way. */
+function render(size, sampleAt, channels) {
+  const pixels = Buffer.alloc(size * size * channels)
 
   for (let py = 0; py < size; py += 1) {
     for (let px = 0; px < size; px += 1) {
@@ -118,7 +159,7 @@ function renderRgba(size) {
         for (let sx = 0; sx < SUPERSAMPLE; sx += 1) {
           const x = ((px + (sx + 0.5) / SUPERSAMPLE) / size) * 100
           const y = ((py + (sy + 0.5) / SUPERSAMPLE) / size) * 100
-          const [cr, cg, cb] = sample(x, y)
+          const [cr, cg, cb] = sampleAt(x, y)
           r += cr
           g += cg
           b += cb
@@ -126,11 +167,11 @@ function renderRgba(size) {
       }
 
       const samples = SUPERSAMPLE * SUPERSAMPLE
-      const offset = (py * size + px) * 4
+      const offset = (py * size + px) * channels
       pixels[offset] = Math.round(r / samples)
       pixels[offset + 1] = Math.round(g / samples)
       pixels[offset + 2] = Math.round(b / samples)
-      pixels[offset + 3] = 255
+      if (channels === 4) pixels[offset + 3] = 255
     }
   }
 
@@ -151,20 +192,20 @@ function chunk(type, data) {
   return Buffer.concat([length, typeAndData, checksum])
 }
 
-function encodePng(pixels, size) {
+function encodePng(pixels, size, channels) {
   const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
   const ihdr = Buffer.alloc(13)
   ihdr.writeUInt32BE(size, 0)
   ihdr.writeUInt32BE(size, 4)
   ihdr[8] = 8 // bit depth
-  ihdr[9] = 6 // colour type: RGBA
+  ihdr[9] = channels === 4 ? 6 : 2 // colour type: RGBA or RGB
   ihdr[10] = 0 // deflate
   ihdr[11] = 0 // adaptive filtering
   ihdr[12] = 0 // no interlace
 
   // Each scanline is prefixed with its filter byte (0 = None).
-  const stride = size * 4
+  const stride = size * channels
   const raw = Buffer.alloc((stride + 1) * size)
   for (let y = 0; y < size; y += 1) {
     raw[y * (stride + 1)] = 0
@@ -181,11 +222,26 @@ function encodePng(pixels, size) {
 
 /* -------------------------------------------------------------------- run */
 
-mkdirSync(OUT_DIR, { recursive: true })
+function write(dir, name, png, size) {
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, name), png)
+  console.log(`${name.padEnd(24)} ${`${size}x${size}`.padEnd(11)} ${(png.length / 1024).toFixed(1)} kB`)
+}
 
 for (const size of [180, 192, 512]) {
-  const png = encodePng(renderRgba(size), size)
   const name = size === 180 ? 'apple-touch-icon.png' : `icon-${size}.png`
-  writeFileSync(join(OUT_DIR, name), png)
-  console.log(`${name.padEnd(22)} ${size}x${size}  ${(png.length / 1024).toFixed(1)} kB`)
+  write(WEB_DIR, name, encodePng(render(size, sample, 4), size, 4), size)
+}
+
+/* RGB rather than RGBA, and not because of the file size: an alpha channel on an iOS
+ * app icon is composited against black, which turns the rounded corners into dark
+ * fringing, and it is grounds for rejection if this ever goes near the App Store. */
+write(ICON_SET, 'AppIcon-512@2x.png', encodePng(render(1024, sample, 3), 1024, 3), 1024)
+
+/* One image, written three times, because the asset catalogue declares 1x/2x/3x and
+ * Xcode will not build with a slot left empty. At 2732 square it covers any device in
+ * either orientation, so the three really are the same picture. */
+const splash = encodePng(render(2732, sampleSplash, 3), 2732, 3)
+for (const name of ['splash-2732x2732.png', 'splash-2732x2732-1.png', 'splash-2732x2732-2.png']) {
+  write(SPLASH_SET, name, splash, 2732)
 }
