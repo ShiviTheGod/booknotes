@@ -252,7 +252,8 @@
   border-top: 1px solid var(--c-rule-soft);
 }
 
-.removeLink {
+.removeLink,
+.editDetailsLink {
   background: none;
   border: none;
   padding: var(--sp-2) 0;
@@ -260,6 +261,11 @@
   font-size: var(--text-sm);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.editDetailsLink {
+  display: block;
+  margin-top: var(--sp-2);
 }
 
 .confirmRow {

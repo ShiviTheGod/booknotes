@@ -1,0 +1,71 @@
+.form {
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-4);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-lg);
+}
+
+.field {
+  display: block;
+  margin-bottom: var(--sp-4);
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--c-ink-soft);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  background: var(--c-paper);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+}
+
+.help {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+}
+
+.cancel {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-4);
+
+  background: none;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.save {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-5);
+
+  color: var(--c-paper);
+  background: var(--c-brass);
+  border: none;
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.save:disabled {
+  opacity: 0.45;
+}

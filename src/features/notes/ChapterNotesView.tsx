@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../data/db'
 import { listNotesByChapter, SOFT_NOTE_LIMIT } from '../../data/repo/notes'
-import { updateChapter } from '../../data/repo/chapters'
+import { deleteChapter, updateChapter } from '../../data/repo/chapters'
 import PageHeader from '../../components/PageHeader'
 import NoteComposer from './NoteComposer'
 import NoteCard from './NoteCard'
@@ -11,6 +11,7 @@ import styles from './ChapterNotesView.module.css'
 
 export default function ChapterNotesView() {
   const { bookId = '', chapterId = '' } = useParams()
+  const navigate = useNavigate()
 
   const book = useLiveQuery(() => db.books.get(bookId), [bookId])
   const chapter = useLiveQuery(() => db.chapters.get(chapterId), [chapterId])
@@ -18,6 +19,7 @@ export default function ChapterNotesView() {
 
   const [renaming, setRenaming] = useState(false)
   const [draftTitle, setDraftTitle] = useState('')
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   if (chapter === undefined) return <p className={styles.loading}>Loading…</p>
   if (chapter === null) return <p className={styles.loading}>That chapter no longer exists.</p>
@@ -29,6 +31,11 @@ export default function ChapterNotesView() {
     const next = draftTitle.trim()
     if (next) await updateChapter(chapterId, { title: next })
     setRenaming(false)
+  }
+
+  async function removeChapter() {
+    await deleteChapter(chapterId)
+    navigate(`/book/${bookId}`)
   }
 
   return (
@@ -107,6 +114,44 @@ export default function ChapterNotesView() {
           No notes in this chapter yet. What's the one idea worth keeping?
         </p>
       )}
+
+      <section className={styles.danger}>
+        {confirmingDelete ? (
+          <div className={styles.confirmRow}>
+            {/* The note count is spelled out because deleting a chapter takes its notes
+                and their photos with it. "Delete this chapter?" would hide that. */}
+            <p className={styles.confirmText}>
+              {count > 0
+                ? `Delete “${chapter.title}” and the ${count} ${count === 1 ? 'note' : 'notes'} in it? This can't be undone.`
+                : `Delete “${chapter.title}”?`}
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.keepButton}
+                onClick={() => setConfirmingDelete(false)}
+              >
+                Keep it
+              </button>
+              <button
+                type="button"
+                className={styles.deleteButton}
+                onClick={() => void removeChapter()}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={styles.removeLink}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            Delete this chapter
+          </button>
+        )}
+      </section>
     </>
   )
 }

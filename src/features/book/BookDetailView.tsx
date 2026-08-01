@@ -11,6 +11,7 @@ import {
 import { deleteBook, markFinished, markReading } from '../../data/repo/books'
 import BookCover from '../../components/BookCover'
 import PageHeader from '../../components/PageHeader'
+import BookDetailsForm from './BookDetailsForm'
 import styles from './BookDetailView.module.css'
 
 export default function BookDetailView() {
@@ -30,6 +31,7 @@ export default function BookDetailView() {
 
   const [newChapterTitle, setNewChapterTitle] = useState('')
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [editingDetails, setEditingDetails] = useState(false)
 
   if (book === undefined) return <p className={styles.loading}>Loading…</p>
   if (book === null) return <p className={styles.loading}>That book is no longer on your shelf.</p>
@@ -100,8 +102,20 @@ export default function BookDetailView() {
           >
             {isFinished ? `Finished ${formatDate(book.dateFinished)}` : 'Mark as finished'}
           </button>
+
+          {!editingDetails && (
+            <button
+              type="button"
+              className={styles.editDetailsLink}
+              onClick={() => setEditingDetails(true)}
+            >
+              Edit details
+            </button>
+          )}
         </div>
       </div>
+
+      {editingDetails && <BookDetailsForm book={book} onDone={() => setEditingDetails(false)} />}
 
       {totalNotes > 0 && (
         <Link to={`/book/${bookId}/summary`} className={styles.summaryLink}>

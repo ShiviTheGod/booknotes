@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Note } from '../../data/types'
-import { deleteNote } from '../../data/repo/notes'
+import { deleteNote, updateNote } from '../../data/repo/notes'
 import { getImageBlob } from '../../data/repo/images'
 import { OCR_CONFIDENCE_THRESHOLD } from '../../services/ocr'
 import styles from './NoteCard.module.css'
@@ -9,6 +9,8 @@ export default function NoteCard({ note }: { note: Note }) {
   const [imageUrl, setImageUrl] = useState<string>()
   const [showOcr, setShowOcr] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
 
   useEffect(() => {
     if (!note.imageBlobId) return
@@ -32,6 +34,21 @@ export default function NoteCard({ note }: { note: Note }) {
   const lowConfidence =
     note.ocrConfidence !== undefined && note.ocrConfidence < OCR_CONFIDENCE_THRESHOLD
 
+  // A photo note's body is a caption and may legitimately be empty. A typed or
+  // dictated one *is* its text, so emptying it would leave a note that says nothing.
+  const canSaveEdit = Boolean(note.imageBlobId) || draft.trim().length > 0
+
+  async function saveEdit() {
+    if (!canSaveEdit) return
+    await updateNote(note.id, { content: draft.trim() })
+    setEditing(false)
+  }
+
+  function startEditing() {
+    setDraft(note.content ?? '')
+    setEditing(true)
+  }
+
   return (
     <article className={styles.card}>
       <header className={styles.header}>
@@ -54,7 +71,38 @@ export default function NoteCard({ note }: { note: Note }) {
         />
       )}
 
-      {note.content && <p className={styles.body}>{note.content}</p>}
+      {editing ? (
+        <div className={styles.editor}>
+          <textarea
+            className={styles.editorInput}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            aria-label="Note text"
+            autoFocus
+          />
+          <div className={styles.editorActions}>
+            {/* Visible Cancel, for the same reason the chapter rename has one: there
+                is no Escape key on a phone. */}
+            <button
+              type="button"
+              className={styles.editorCancel}
+              onClick={() => setEditing(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.editorSave}
+              onClick={() => void saveEdit()}
+              disabled={!canSaveEdit}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        note.content && <p className={styles.body}>{note.content}</p>
+      )}
 
       {note.type === 'photo' && (
         <div className={styles.ocr}>
@@ -124,9 +172,23 @@ export default function NoteCard({ note }: { note: Note }) {
             </button>
           </span>
         ) : (
-          <button type="button" className={styles.deleteLink} onClick={() => setConfirming(true)}>
-            Delete
-          </button>
+          !editing && (
+            <>
+              {note.updatedAt && note.updatedAt !== note.createdAt && (
+                <span className={styles.edited}>edited</span>
+              )}
+              <button type="button" className={styles.editLink} onClick={startEditing}>
+                Edit
+              </button>
+              <button
+                type="button"
+                className={styles.deleteLink}
+                onClick={() => setConfirming(true)}
+              >
+                Delete
+              </button>
+            </>
+          )
         )}
       </footer>
     </article>
