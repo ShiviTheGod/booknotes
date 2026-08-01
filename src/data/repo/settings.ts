@@ -16,6 +16,8 @@ export const SETTING_KEYS = {
   userLanguage: 'userLanguage',
   /** Last shelf view the user chose: 'genre' | 'timeline'. */
   shelfView: 'shelfView',
+  /** Books to finish this calendar year. 0 or absent means no goal is set. */
+  readingGoal: 'readingGoal',
 } as const
 
 export function defaultUserLanguage(): string {

@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../data/db'
 import PageHeader from '../../components/PageHeader'
+import ReadingGoal from './ReadingGoal'
 import { computeStats } from './computeStats'
 import styles from './StatsView.module.css'
 
@@ -17,6 +18,8 @@ export default function StatsView() {
   return (
     <>
       <PageHeader title="Stats" subtitle="What your reading looks like over time" />
+
+      <ReadingGoal />
 
       <div className={styles.tiles}>
         <Tile value={stats.finishedBooks} label="Books finished" />

@@ -1,0 +1,120 @@
+.card {
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-lg);
+}
+
+.title {
+  font-size: var(--text-base);
+  color: var(--c-ink-soft);
+  font-weight: 600;
+  margin-bottom: var(--sp-3);
+}
+
+/* The number is the control. Styled as text rather than as a button so the card
+   stays a piece of information, but it keeps a full tap target. */
+.countRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-height: var(--tap-min);
+
+  padding: 0;
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+.count {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  color: var(--c-ink);
+  line-height: 1;
+}
+
+.of {
+  font-size: var(--text-sm);
+  color: var(--c-ink-faint);
+}
+
+.track {
+  height: 8px;
+  margin-top: var(--sp-3);
+
+  background: var(--c-paper-deep);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.fill,
+.fillDone {
+  height: 100%;
+  border-radius: var(--r-full);
+  transition: width 300ms ease;
+}
+
+.fill {
+  background: var(--c-brass);
+}
+
+.fillDone {
+  background: var(--c-brass-bright);
+}
+
+.pace {
+  margin-top: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--c-ink-soft);
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--c-ink-faint);
+  margin-bottom: var(--sp-3);
+}
+
+.editRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.input {
+  width: 6rem;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+
+  background: var(--c-surface-raised);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  font-size: var(--text-lg);
+  color: var(--c-ink);
+}
+
+.set,
+.save,
+.cancel {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.set,
+.save {
+  color: var(--c-paper);
+  background: var(--c-brass);
+  border: none;
+}
+
+.cancel {
+  color: var(--c-ink);
+  background: none;
+  border: 1px solid var(--c-rule);
+  font-weight: 500;
+}

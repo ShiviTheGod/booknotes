@@ -3,6 +3,7 @@ import type { Book, Note } from '../../data/types'
 import {
   computeCurrentStreak,
   computeFinishedPerMonth,
+  computeGoalProgress,
   computeLongestStreak,
   computeStats,
   localDayKey,
@@ -200,5 +201,63 @@ describe('computeStats', () => {
     const stats = computeStats([], [note(now), note(now), note(now)])
     expect(stats.currentStreak).toBe(1)
     expect(stats.totalNotes).toBe(3)
+  })
+})
+
+describe('computeGoalProgress', () => {
+  /** A book finished on a fixed calendar date, so pace can be checked against a fixed "now". */
+  function finishedOn(iso: string): Book {
+    return book({ status: 'finished', dateFinished: new Date(`${iso}T12:00:00`).toISOString() })
+  }
+
+  const midYear = new Date(2026, 6, 2, 12) // 2 July 2026 — just past halfway.
+
+  it('is absent until a goal is set', () => {
+    expect(computeGoalProgress([finishedOn('2026-01-05')], 0, midYear)).toBeUndefined()
+  })
+
+  it('counts only books finished in the current year', () => {
+    const books = [finishedOn('2026-01-05'), finishedOn('2025-12-30'), book()]
+    expect(computeGoalProgress(books, 12, midYear)?.finished).toBe(1)
+  })
+
+  it('measures pace against how far into the year it is', () => {
+    // Half a year gone, goal of 12, so six is the pace.
+    const onPace = Array.from({ length: 6 }, (_, i) => finishedOn(`2026-0${i + 1}-10`))
+    const progress = computeGoalProgress(onPace, 12, midYear)
+
+    expect(progress?.expectedByNow).toBe(6)
+    expect(progress?.aheadBy).toBe(0)
+    expect(progress?.remaining).toBe(6)
+  })
+
+  it('reports being ahead and behind that pace', () => {
+    const eight = Array.from({ length: 8 }, (_, i) => finishedOn(`2026-0${(i % 6) + 1}-1${i}`))
+    expect(computeGoalProgress(eight, 12, midYear)?.aheadBy).toBe(2)
+    expect(computeGoalProgress([finishedOn('2026-02-01')], 12, midYear)?.aheadBy).toBe(-5)
+  })
+
+  it('does not overfill the bar once the goal is passed', () => {
+    const many = Array.from({ length: 20 }, (_, i) => finishedOn(`2026-0${(i % 6) + 1}-0${(i % 9) + 1}`))
+    const progress = computeGoalProgress(many, 12, midYear)
+
+    expect(progress?.done).toBe(true)
+    expect(progress?.fraction).toBe(1)
+    expect(progress?.remaining).toBe(0)
+  })
+
+  it('counts books finished before the goal was set, not just after', () => {
+    // Setting a goal in July is not a fresh start — January's reading still counts,
+    // which is the difference between an encouraging number and a discouraging one.
+    const progress = computeGoalProgress([finishedOn('2026-01-05')], 12, midYear)
+    expect(progress?.finished).toBe(1)
+  })
+
+  it('leaves no days and no pace credit on the last day of the year', () => {
+    const lastDay = new Date(2026, 11, 31, 23)
+    const progress = computeGoalProgress([finishedOn('2026-03-01')], 12, lastDay)
+
+    expect(progress?.daysLeft).toBe(0)
+    expect(progress?.remaining).toBe(11)
   })
 })

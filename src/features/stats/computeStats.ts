@@ -133,6 +133,81 @@ function bookmarkedPages(book: Book): number {
   return book.pageCount ? Math.min(book.currentPage, book.pageCount) : book.currentPage
 }
 
+export interface GoalProgress {
+  goal: number
+  finished: number
+  remaining: number
+  /** 0–1, clamped, for the bar. Passing the goal does not overfill it. */
+  fraction: number
+  /** How many should be done by today to finish on time, rounded down. */
+  expectedByNow: number
+  /** Positive when ahead of that pace, negative when behind. */
+  aheadBy: number
+  daysLeft: number
+  done: boolean
+}
+
+/**
+ * Progress against a books-per-year goal.
+ *
+ * Pace is measured against where the year is, not against a monthly quota: reading
+ * is lumpy, and "you are 2 behind" in November means something quite different from
+ * the same sentence in February. The year fraction handles that without any special
+ * cases, and it is why a goal set halfway through the year does not immediately
+ * report a hopeless deficit for books read before it was set — those still count.
+ */
+export function computeGoalProgress(
+  books: Book[],
+  goal: number,
+  now = new Date(),
+): GoalProgress | undefined {
+  if (!goal || goal <= 0) return undefined
+
+  const year = now.getFullYear()
+  const finished = books.filter(
+    (book) =>
+      book.status === 'finished' &&
+      book.dateFinished &&
+      new Date(book.dateFinished).getFullYear() === year,
+  ).length
+
+  // Whole calendar days, never a difference of timestamps. Subtracting two instants
+  // and dividing by 86,400,000 is off by an hour on either side of a daylight-saving
+  // change, which is enough to drop the expected count by one for half the year —
+  // and the report of being a book behind would have been the clock's fault.
+  const elapsedDays = dayOfYear(now) + 1
+  const yearLength = daysInYear(year)
+  const daysLeft = yearLength - elapsedDays
+
+  const expectedByNow = Math.floor(goal * (elapsedDays / yearLength))
+
+  return {
+    goal,
+    finished,
+    remaining: Math.max(0, goal - finished),
+    fraction: Math.min(1, finished / goal),
+    expectedByNow,
+    aheadBy: finished - expectedByNow,
+    daysLeft: Math.max(0, daysLeft),
+    done: finished >= goal,
+  }
+}
+
+/** Days from 1 January to `date`, counting 1 January as 0. */
+function dayOfYear(date: Date): number {
+  const millisecondsPerDay = 24 * 60 * 60 * 1000
+  // The local Y/M/D are re-read as UTC, so the subtraction happens in a calendar
+  // with no daylight saving in it at all.
+  const start = Date.UTC(date.getFullYear(), 0, 1)
+  const today = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  return Math.round((today - start) / millisecondsPerDay)
+}
+
+function daysInYear(year: number): number {
+  const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+  return isLeap ? 366 : 365
+}
+
 export function computeStats(books: Book[], notes: Note[]): Stats {
   const finished = books.filter((book) => book.status === 'finished')
 
