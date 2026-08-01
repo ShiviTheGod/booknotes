@@ -1,5 +1,9 @@
 .card {
   margin-top: var(--sp-5);
+  /* Matches the gap between sections further down the page, and has to stay well
+     clear of the 12px the tiles sit apart from each other: at anything close to
+     that, the goal reads as the first cell of the grid rather than its own thing. */
+  margin-bottom: var(--sp-6);
   padding: var(--sp-5);
 
   background: var(--c-surface);
