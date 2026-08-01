@@ -6,12 +6,37 @@
   box-sizing: border-box;
 }
 
+/*
+ * The document is pinned to the viewport and never scrolls. The scrolling happens
+ * one level in, inside AppLayout.
+ *
+ * This is what keeps the app's own colours on screen at the edges. A scrolling
+ * document rubber-bands past its ends on iOS, and the strip that opens up is
+ * painted by the WebView rather than by the page — a fixed colour that cannot
+ * follow the system theme, which is how a parchment band came to flash above and
+ * below a dark-mode app. Nothing to overscroll, no band.
+ */
 html {
   /* Stops iOS Safari inflating text in landscape. */
   -webkit-text-size-adjust: 100%;
+
+  height: 100%;
+  /* dvh tracks iOS Safari's collapsing address bar; the 100% above is the fallback. */
+  height: 100dvh;
+  overflow: hidden;
 }
 
 body {
+  /*
+   * Taken out of flow rather than just clipped. `overflow: hidden` alone stops the
+   * finger but leaves the viewport a scrollport with a scrollable range still in it,
+   * and anything that calls scrollIntoView — the browser itself, when a field is
+   * focused — can shift the entire app up with no way to drag it back. Out of flow,
+   * the document has nothing to scroll at all.
+   */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
   margin: 0;
   background: var(--c-paper);
   color: var(--c-ink);
@@ -19,8 +44,10 @@ body {
   font-size: var(--text-base);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  /* Keeps the rubber-band overscroll area the same colour as the app on iOS. */
-  overscroll-behavior-y: none;
+}
+
+#root {
+  height: 100%;
 }
 
 h1,

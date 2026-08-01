@@ -1,15 +1,31 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { watchKeyboard } from '../services/keyboard'
 import styles from './AppLayout.module.css'
 
 /** Bottom tab bar + scrollable content area. Mobile-first; widens to a centred column on tablets. */
 export default function AppLayout() {
+  const [keyboardOpen, setKeyboardOpen] = useState(false)
+
+  useEffect(() => watchKeyboard(setKeyboardOpen), [])
+
   return (
-    <div className={styles.shell}>
-      <main className={styles.content}>
-        <Outlet />
+    <div className={styles.shell} data-keyboard={keyboardOpen ? 'open' : 'closed'}>
+      {/*
+        The scroll container is this element rather than the document, so the page
+        itself has nothing to overscroll. See global.css for why that matters on iOS.
+        The width-limited column sits inside it so that on a wide window the whole
+        window scrolls, not just the centre strip.
+      */}
+      <main className={styles.scroll}>
+        <div className={styles.content}>
+          <Outlet />
+        </div>
       </main>
 
-      <nav className={styles.nav} aria-label="Main">
+      {/* Hidden outright while the keyboard is up: it would otherwise sit on top of
+          the keyboard, covering the results of whatever is being typed. */}
+      <nav className={styles.nav} aria-label="Main" inert={keyboardOpen}>
         <NavLink to="/" end className={navClass}>
           <ShelfIcon />
           <span>Shelf</span>

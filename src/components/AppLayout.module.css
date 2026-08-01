@@ -1,14 +1,23 @@
 .shell {
-  min-height: 100vh;
-  /* dvh accounts for iOS Safari's collapsing address bar; vh above is the fallback. */
-  min-height: 100dvh;
+  /* Exactly the viewport, never more: html and body are locked to it in global.css. */
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--c-paper);
 }
 
-.content {
+.scroll {
   flex: 1;
+  /* A flex child will not shrink below its content without this, and the overflow
+     would escape to the document — which is the thing we are trying to avoid. */
+  min-height: 0;
+  overflow-y: auto;
+  /* Bouncing at the end of a list stays inside this box, so what springs into view
+     is this element's own background rather than anything the WebView paints. */
+  overscroll-behavior-y: contain;
+}
+
+.content {
   width: 100%;
   max-width: var(--content-max);
   margin: 0 auto;
@@ -32,6 +41,22 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--c-rule);
+  transition: transform 180ms ease;
+}
+
+/*
+ * The keyboard does not slide over the app — Capacitor shortens the WebView to make
+ * room for it. So `bottom: 0` stops being the bottom of the screen and becomes the
+ * top edge of the keyboard, and the tab bar surfaces in the middle of the results.
+ * Send it away for as long as someone is typing; the padding below goes with it so
+ * the reclaimed space shows list rows instead of blank paper.
+ */
+.shell[data-keyboard='open'] .nav {
+  transform: translateY(100%);
+}
+
+.shell[data-keyboard='open'] .content {
+  padding-bottom: calc(var(--safe-bottom) + var(--sp-6));
 }
 
 .navLink {
