@@ -47,8 +47,35 @@ export async function updateBook(id: string, changes: Partial<Book>): Promise<vo
   await db.books.update(id, { ...changes, updatedAt: nowIso() })
 }
 
+/**
+ * Move the bookmark, or clear it when given nothing.
+ *
+ * Clamped to the book's length rather than rejected: typing 500 for a 320-page book is
+ * a slip, and refusing the whole edit over it is more annoying than quietly landing on
+ * the last page. Zero and below clears the bookmark instead of pinning it to page 0,
+ * which would read as "I have started" when the reader meant the opposite.
+ */
+export async function setBookmark(id: string, page: number | undefined): Promise<void> {
+  if (page === undefined || !Number.isFinite(page) || page <= 0) {
+    await updateBook(id, { currentPage: undefined })
+    return
+  }
+
+  const book = await db.books.get(id)
+  const capped = book?.pageCount ? Math.min(Math.round(page), book.pageCount) : Math.round(page)
+  await updateBook(id, { currentPage: capped })
+}
+
 export async function markFinished(id: string, when = nowIso()): Promise<void> {
-  await updateBook(id, { status: 'finished', dateFinished: when })
+  const book = await db.books.get(id)
+  // Finishing a book means the bookmark is at the end, whether or not it was ever
+  // moved there by hand. Leaving it mid-book would make the shelf show a finished
+  // book as half-read.
+  await updateBook(id, {
+    status: 'finished',
+    dateFinished: when,
+    currentPage: book?.pageCount ?? book?.currentPage,
+  })
 }
 
 export async function markReading(id: string): Promise<void> {

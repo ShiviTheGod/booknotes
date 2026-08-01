@@ -12,6 +12,7 @@ import { deleteBook, markFinished, markReading } from '../../data/repo/books'
 import BookCover from '../../components/BookCover'
 import PageHeader from '../../components/PageHeader'
 import BookDetailsForm from './BookDetailsForm'
+import Bookmark from './Bookmark'
 import styles from './BookDetailView.module.css'
 
 export default function BookDetailView() {
@@ -102,6 +103,8 @@ export default function BookDetailView() {
           >
             {isFinished ? `Finished ${formatDate(book.dateFinished)}` : 'Mark as finished'}
           </button>
+
+          <Bookmark book={book} />
 
           {!editingDetails && (
             <button

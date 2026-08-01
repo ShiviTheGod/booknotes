@@ -148,10 +148,15 @@ becomes undeletable.
 
 ## Not in v1
 
-Community and social features, sharing or selling summaries, and AI summarization (the seam
-is there, unused).
+Community and social features, and sharing or selling summaries.
+
+**No AI summarization, by decision rather than by omission.** A book's summary is its notes
+gathered in reading order, exactly as written. Those are the reader's own words about their
+own reading — the one thing in the app that exists nowhere else — and a model rewriting them
+would replace precisely that. It would also need an API key a static app cannot hold, and a
+bill for every book finished. The summary needs no generating step because there is nothing
+to compute: it is always current, works offline, and costs nothing.
 
 ## Roadmap
 
-- "AI condense" on the summary view
 - Syncing photos, for anyone willing to spend the storage on it

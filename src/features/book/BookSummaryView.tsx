@@ -10,10 +10,14 @@ import styles from './BookSummaryView.module.css'
 /**
  * Every note for a book, gathered into one read-through.
  *
- * v1 is aggregation only — the notes are shown as written, in reading order, with no
- * rewriting. That's the honest version: these are the reader's own words, and an
- * automated condense would quietly replace them. The hook for an optional "AI condense"
- * pass is left below for when it's actually wanted.
+ * Aggregation only, and permanently so — this is a settled decision rather than a
+ * placeholder. The notes appear as written, in reading order, with nothing rewritten.
+ * They are the reader's own words about their own reading; a model summarising them
+ * would replace the one thing here that cannot be got anywhere else. It would also
+ * need an API key, which a static app cannot hold, and a bill for every book finished.
+ *
+ * The summary needs no generating step for the same reason: there is nothing to
+ * compute. It is always current, works offline, and costs nothing.
  */
 export default function BookSummaryView() {
   const { bookId = '' } = useParams()

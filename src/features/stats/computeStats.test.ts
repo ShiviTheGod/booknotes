@@ -124,8 +124,9 @@ describe('computeFinishedPerMonth', () => {
 })
 
 describe('computeStats', () => {
-  it('counts only finished books toward pages read', () => {
-    // Counting a part-read book's full page count would make the number meaningless.
+  it('ignores an unbookmarked book still being read', () => {
+    // Its full length is not evidence of anything: without a bookmark there is no way
+    // to know whether the reader is on page 2 or page 900.
     const stats = computeStats(
       [
         book({ status: 'finished', pageCount: 300, dateFinished: new Date().toISOString() }),
@@ -137,6 +138,33 @@ describe('computeStats', () => {
     expect(stats.pagesRead).toBe(300)
     expect(stats.finishedBooks).toBe(1)
     expect(stats.readingBooks).toBe(1)
+  })
+
+  it('counts a book in progress as far as its bookmark', () => {
+    const stats = computeStats(
+      [
+        book({ status: 'finished', pageCount: 300, dateFinished: new Date().toISOString() }),
+        book({ status: 'reading', pageCount: 400, currentPage: 120 }),
+      ],
+      [],
+    )
+
+    expect(stats.pagesRead).toBe(420)
+  })
+
+  it('does not let a stale bookmark report more pages than the book has', () => {
+    // Shortening a book's page count can strand its bookmark past the end. Summing it
+    // raw would claim more pages read than exist.
+    const stats = computeStats([book({ status: 'reading', pageCount: 320, currentPage: 500 })], [])
+
+    expect(stats.pagesRead).toBe(320)
+  })
+
+  it('treats a bookmark with no known length as pages read all the same', () => {
+    // Page 80 of a book of unknown length is still 80 pages of reading.
+    const stats = computeStats([book({ status: 'reading', currentPage: 80 })], [])
+
+    expect(stats.pagesRead).toBe(80)
   })
 
   it('reports how many finished books lack a page count', () => {

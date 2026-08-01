@@ -30,6 +30,13 @@ export interface Book {
   /** Local cached copy of the cover, so the shelf renders offline. */
   coverBlobId?: string
   pageCount?: number
+  /**
+   * The bookmark: the page the reader last stopped on.
+   *
+   * Kept separate from pageCount so "how far in" and "how long" stay independent —
+   * a book can have a bookmark with no known length, and a length with no bookmark.
+   */
+  currentPage?: number
   genres: string[]
   status: BookStatus
   dateStarted?: string

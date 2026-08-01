@@ -121,15 +121,33 @@ export function computeFinishedPerMonth(books: Book[], months = 12): MonthCount[
   return result
 }
 
+/**
+ * How far into a book its bookmark says the reader is.
+ *
+ * Capped at the book's length because a bookmark can outlive an edit: correcting a
+ * 500-page book down to 320 leaves a bookmark beyond the end, and an uncapped sum
+ * would then report more pages read than the book has.
+ */
+function bookmarkedPages(book: Book): number {
+  if (!book.currentPage || book.currentPage <= 0) return 0
+  return book.pageCount ? Math.min(book.currentPage, book.pageCount) : book.currentPage
+}
+
 export function computeStats(books: Book[], notes: Note[]): Stats {
   const finished = books.filter((book) => book.status === 'finished')
 
   const dayKeys = new Set(notes.map((note) => localDayKey(note.createdAt)))
   const today = localDayKey(new Date())
 
-  // Only finished books count toward pages read. Counting a partially-read book's
-  // full page count would inflate the number into meaninglessness.
-  const pagesRead = finished.reduce((sum, book) => sum + (book.pageCount ?? 0), 0)
+  // A finished book counts its full length; a book still being read counts only as far
+  // as its bookmark. Before bookmarks existed the second group had to be left out
+  // entirely — counting a part-read book's whole length would have inflated the number
+  // into meaninglessness, and there was no way to know how far in the reader was.
+  const pagesRead =
+    finished.reduce((sum, book) => sum + (book.pageCount ?? 0), 0) +
+    books
+      .filter((book) => book.status === 'reading')
+      .reduce((sum, book) => sum + bookmarkedPages(book), 0)
 
   return {
     totalBooks: books.length,
