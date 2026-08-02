@@ -8,6 +8,7 @@ import { installSampleBooks, removeSampleBooks, sampleBookTally } from '../../da
 import { isIos, isStandalone } from '../../services/speech'
 import NativeDiagnostics from './NativeDiagnostics'
 import LibraryImport from './LibraryImport'
+import SupportProject from './SupportProject'
 import TranslationSettings from './TranslationSettings'
 import SyncSettings from './SyncSettings'
 import FriendsSettings from './FriendsSettings'
@@ -108,6 +109,8 @@ export default function SettingsView() {
   return (
     <>
       <PageHeader title="Settings" />
+
+      <SupportProject />
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Your library</h2>

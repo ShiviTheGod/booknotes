@@ -1,0 +1,40 @@
+/* Softer than a settings section on purpose: no heading, no rule above it, and a
+   background a shade off the page so it reads as an aside rather than as the first
+   thing that has to be dealt with. */
+.section {
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-4) var(--sp-5);
+
+  background: var(--c-paper-deep);
+  border-radius: var(--r-lg);
+}
+
+.body {
+  font-size: var(--text-sm);
+  color: var(--c-ink-soft);
+  line-height: 1.55;
+  margin-bottom: var(--sp-4);
+}
+
+/* Outlined rather than filled. The brass fill is what the app uses for the action
+   it wants you to take, and this is not one of those. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-5);
+
+  color: var(--c-brass);
+  background: none;
+  border: 1px solid var(--c-brass);
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.note {
+  margin-top: var(--sp-3);
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}
