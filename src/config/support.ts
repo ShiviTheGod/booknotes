@@ -12,7 +12,7 @@
  * Deliberately no amount on the end. PayPal.Me accepts one — /handle/5 opens with
  * five already filled in — and naming a figure turns an offer into a price.
  */
-export const SUPPORT_URL = ''
+export const SUPPORT_URL = 'https://paypal.me/martinsivel'
 
 /**
  * What the button says.
