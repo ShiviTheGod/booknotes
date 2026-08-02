@@ -5,6 +5,7 @@ import App from './App'
 import { defaultUserLanguage, getSetting, SETTING_KEYS } from './data/repo/settings'
 import { initTranslation } from './services/translation'
 import { processOcrQueue } from './services/ocr'
+import { applyResolvedTheme, readThemeChoice, watchSystemTheme } from './services/theme'
 import './styles/global.css'
 
 /**
@@ -20,6 +21,12 @@ async function startBackgroundWork(): Promise<void> {
   await initTranslation(target)
   await processOcrQueue()
 }
+
+// The inline script in index.html has already set this for the first paint; this
+// re-applies it from the same source of truth and keeps "auto" following the system
+// for as long as the app is open.
+applyResolvedTheme(readThemeChoice())
+watchSystemTheme()
 
 const container = document.getElementById('root')
 if (!container) throw new Error('Root element missing from index.html')

@@ -21,6 +21,23 @@
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
 
     <title>BookNotes</title>
+
+    <!-- Resolves the palette before the stylesheet paints. The module in src/ loads
+         after the CSS does, so leaving this to React would show a light frame and
+         then snap to dark on every launch. Kept deliberately tiny and duplicated
+         from src/services/theme.ts — the storage key must match that file. -->
+    <script>
+      try {
+        var choice = localStorage.getItem('booknotes.theme')
+        var dark =
+          choice === 'dark' ||
+          ((!choice || choice === 'auto') &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (error) {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

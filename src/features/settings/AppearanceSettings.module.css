@@ -1,0 +1,57 @@
+.section {
+  margin-bottom: var(--sp-6);
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--c-rule);
+}
+
+/* One track holding three cells, so the selected one reads as a position rather than
+   as three separate buttons of which one happens to be on. */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+
+  background: var(--c-paper-deep);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-full);
+}
+
+.option,
+.optionOn {
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-2);
+
+  border: none;
+  border-radius: var(--r-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.option {
+  color: var(--c-ink-soft);
+  background: none;
+}
+
+.optionOn {
+  color: var(--c-paper);
+  background: var(--c-brass);
+}
+
+.help {
+  margin-top: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--c-ink-soft);
+}
+
+.note {
+  margin-top: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--c-ink-faint);
+}

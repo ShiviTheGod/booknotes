@@ -78,28 +78,34 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --c-paper: #1c1815;
-    --c-paper-deep: #141110;
-    --c-surface: #262119;
-    --c-surface-raised: #2f2921;
+/*
+ * The dark palette, keyed off an attribute rather than the media query.
+ *
+ * `prefers-color-scheme` alone can only follow the system, and there is no way to
+ * override it from inside the page. The choice — auto, light, dark — is resolved in
+ * JavaScript before first paint and written to the root element as data-theme, so
+ * this one selector serves all three cases and neither palette is written twice.
+ */
+:root[data-theme='dark'] {
+  --c-paper: #1c1815;
+  --c-paper-deep: #141110;
+  --c-surface: #262119;
+  --c-surface-raised: #2f2921;
 
-    --c-ink: #ece3d4;
-    --c-ink-soft: #b3a693;
-    --c-ink-faint: #82786a;
+  --c-ink: #ece3d4;
+  --c-ink-soft: #b3a693;
+  --c-ink-faint: #82786a;
 
-    --c-brass: #c9a227;
-    --c-brass-bright: #e0bd4a;
-    --c-terracotta: #c9705a;
-    --c-sage: #8aa878;
+  --c-brass: #c9a227;
+  --c-brass-bright: #e0bd4a;
+  --c-terracotta: #c9705a;
+  --c-sage: #8aa878;
 
-    --c-rule: #3d352b;
-    --c-rule-soft: #322b23;
+  --c-rule: #3d352b;
+  --c-rule-soft: #322b23;
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
-    --shadow-cover: 0 2px 8px rgba(0, 0, 0, 0.6);
-  }
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow-cover: 0 2px 8px rgba(0, 0, 0, 0.6);
 }

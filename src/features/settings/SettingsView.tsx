@@ -7,6 +7,7 @@ import { downloadBackup, restoreBackup } from '../../services/backup'
 import { installSampleBooks, removeSampleBooks, sampleBookTally } from '../../data/seed'
 import { isIos, isStandalone } from '../../services/speech'
 import NativeDiagnostics from './NativeDiagnostics'
+import AppearanceSettings from './AppearanceSettings'
 import LibraryImport from './LibraryImport'
 import SupportProject from './SupportProject'
 import TranslationSettings from './TranslationSettings'
@@ -140,6 +141,8 @@ export default function SettingsView() {
           </p>
         </section>
       )}
+
+      <AppearanceSettings />
 
       <LibraryImport />
 
