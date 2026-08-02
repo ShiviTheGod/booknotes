@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+# .ipa artifacts pulled down from CI — several megabytes, and rebuildable
+build-out/
+*.ipa
 
 # logs
 npm-debug.log*
