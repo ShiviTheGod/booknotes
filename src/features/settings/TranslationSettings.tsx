@@ -120,12 +120,23 @@ function explain(
   }
 }
 
-/** 'cs' → 'Czech'. Falls back to the raw code where the browser has no name for it. */
+/**
+ * 'cs' → 'Czech'. Falls back to the raw code where there is no name for it.
+ *
+ * Named in English rather than in the device's locale, which is what leaving the
+ * first argument undefined would do. These names are read inside English sentences —
+ * "Ready. Czech is downloaded and works offline." — and a Czech phone turned that
+ * into "Ready. čeština is downloaded", one word of another language mid-sentence.
+ * The picker had the same problem: an English screen listing "čeština".
+ *
+ * Dates elsewhere in the app deliberately still follow the device. A date format is a
+ * regional convention rather than UI copy, so 2. 8. 2026 is right for whoever reads it.
+ */
 function languageName(code: string | undefined): string {
   if (!code) return 'your language'
 
   try {
-    return new Intl.DisplayNames(undefined, { type: 'language' }).of(code) ?? code
+    return new Intl.DisplayNames('en', { type: 'language' }).of(code) ?? code
   } catch {
     return code
   }
