@@ -1,4 +1,4 @@
-import { SUPPORT_LABEL, SUPPORT_URL, supportEnabled } from '../../config/support'
+import { supportLinks } from '../../config/support'
 import styles from './SupportProject.module.css'
 
 /**
@@ -13,7 +13,8 @@ import styles from './SupportProject.module.css'
  * Someone who reads it and taps nothing has understood it correctly.
  */
 export default function SupportProject() {
-  if (!supportEnabled()) return null
+  const links = supportLinks()
+  if (links.length === 0) return null
 
   return (
     <section className={styles.section}>
@@ -23,18 +24,29 @@ export default function SupportProject() {
         put something in the jar.
       </p>
 
-      <a
-        className={styles.button}
-        href={SUPPORT_URL}
-        // Opens outside the app: in Safari on the web, and in the system browser from
-        // the installed app, where a saved card and Apple Pay actually live.
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {SUPPORT_LABEL}
-      </a>
+      {/* Every jar looks the same. Styling one as the primary action would be picking
+          a payment service on someone's behalf, and the app has no stake in which. */}
+      <div className={styles.buttons}>
+        {links.map((link) => (
+          <a
+            key={link.url}
+            className={styles.button}
+            href={link.url}
+            // Opens outside the app: in Safari on the web, and in the system browser
+            // from the installed app, where a saved card and Apple Pay actually live.
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
 
-      <p className={styles.note}>Entirely optional. Nothing changes either way.</p>
+      <p className={styles.note}>
+        {links.length > 1
+          ? 'Either one, whichever you already have. Entirely optional — nothing changes either way.'
+          : 'Entirely optional. Nothing changes either way.'}
+      </p>
     </section>
   )
 }

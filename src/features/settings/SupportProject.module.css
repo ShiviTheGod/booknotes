@@ -16,6 +16,14 @@
   margin-bottom: var(--sp-4);
 }
 
+/* Wraps rather than shrinks: on a narrow phone the second jar drops to its own line
+   instead of squeezing both below a comfortable tap target. */
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
 /* Outlined rather than filled. The brass fill is what the app uses for the action
    it wants you to take, and this is not one of those. */
 .button {
