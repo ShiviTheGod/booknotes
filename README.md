@@ -1,4 +1,4 @@
-# BookNotes
+# ReadNote
 
 A personal reading journal. Add a book, capture up to a handful of key ideas per chapter —
 typed, dictated, or photographed — and keep them on a shelf you can actually browse.

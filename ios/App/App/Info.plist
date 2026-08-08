@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>BookNotes</string>
+        <string>ReadNote</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,13 +26,13 @@
 	     matching string is missing, so they are not optional polish. Each one is
 	     shown verbatim in the system permission prompt. -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>BookNotes uses the microphone so you can dictate reading notes instead of typing them.</string>
+	<string>ReadNote uses the microphone so you can dictate reading notes instead of typing them.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Dictated notes are transcribed on this device wherever possible, and never leave it.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>BookNotes uses the camera to photograph pages you want to keep. Photos stay on this device.</string>
+	<string>ReadNote uses the camera to photograph pages you want to keep. Photos stay on this device.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>BookNotes can attach an existing photo of a page to a note. Photos stay on this device.</string>
+	<string>ReadNote can attach an existing photo of a page to a note. Photos stay on this device.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

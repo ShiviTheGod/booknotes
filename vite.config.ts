@@ -30,8 +30,8 @@ export default defineConfig({
             registerType: 'autoUpdate',
             includeAssets: ['apple-touch-icon.png'],
             manifest: {
-              name: 'BookNotes',
-              short_name: 'BookNotes',
+              name: 'ReadNote',
+              short_name: 'ReadNote',
               description: 'A personal reading journal. Capture key ideas chapter by chapter.',
               start_url: BASE,
               scope: BASE,

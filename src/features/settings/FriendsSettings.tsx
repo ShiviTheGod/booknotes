@@ -69,12 +69,12 @@ export default function FriendsSettings() {
       const outcome = await requestFriend(email)
       setMessage(
         outcome === 'requested'
-          ? 'Asked. They will see it next time they open BookNotes.'
+          ? 'Asked. They will see it next time they open ReadNote.'
           : outcome === 'accepted'
             ? 'They had already asked you — you are now friends.'
             : outcome === 'self'
               ? 'That is your own address.'
-              : 'Nobody is using BookNotes with that address yet.',
+              : 'Nobody is using ReadNote with that address yet.',
       )
       if (outcome !== 'not-found' && outcome !== 'self') {
         setEmail('')

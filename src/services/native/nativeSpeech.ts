@@ -32,7 +32,7 @@ export function startNativeDictation(
 
       if (permissions.speech !== 'granted' || permissions.microphone !== 'granted') {
         onError(
-          'Dictation needs microphone and speech recognition access. Enable them in Settings → BookNotes.',
+          'Dictation needs microphone and speech recognition access. Enable them in Settings → ReadNote.',
         )
         return
       }

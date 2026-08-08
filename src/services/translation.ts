@@ -3,7 +3,7 @@ import { NativeTranslation, isNativeIos, type TranslationStatus } from './native
 /**
  * Translation of extracted photo text.
  *
- * Every cloud translation service needs an API key, and BookNotes is a static site with
+ * Every cloud translation service needs an API key, and ReadNote is a static site with
  * no backend — a key shipped in the bundle is a key published to the world. That ruled
  * translation out entirely until the installed app existed.
  *

@@ -18,8 +18,18 @@ import type { Book, Chapter, ImageBlob, Note, Review, Setting } from '../data/ty
 
 const EXPORT_VERSION = 1
 
+/**
+ * What new exports are stamped with, and what old ones carry.
+ *
+ * The app was called BookNotes until it was renamed, and backups made under that name
+ * are still the only copy of someone's library. Restore accepts both; export writes
+ * only the current one. A file that cannot be read back is not a backup.
+ */
+const FORMAT = 'readnote-backup'
+const LEGACY_FORMATS = ['booknotes-backup']
+
 export interface BackupFile {
-  format: 'booknotes-backup'
+  format: string
   version: number
   exportedAt: string
   books: Book[]
@@ -73,7 +83,7 @@ export async function buildBackup(): Promise<BackupFile> {
   )
 
   return {
-    format: 'booknotes-backup',
+    format: FORMAT,
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
     books,
@@ -86,7 +96,7 @@ export async function buildBackup(): Promise<BackupFile> {
 }
 
 function backupFilename(): string {
-  return `booknotes-${new Date().toISOString().slice(0, 10)}.json`
+  return `readnote-${new Date().toISOString().slice(0, 10)}.json`
 }
 
 /**
@@ -143,10 +153,10 @@ async function exportViaShareSheet(json: string): Promise<void> {
   // The share sheet is what makes the file reachable — Save to Files, iCloud Drive,
   // AirDrop, mail. Without it the JSON would sit in a sandbox the reader cannot open.
   await Share.share({
-    title: 'BookNotes backup',
-    text: 'Your BookNotes library.',
+    title: 'ReadNote backup',
+    text: 'Your ReadNote library.',
     url: uri,
-    dialogTitle: 'Save your BookNotes backup',
+    dialogTitle: 'Save your ReadNote backup',
   })
 }
 
@@ -175,12 +185,12 @@ export async function restoreBackup(file: File): Promise<ImportResult> {
     throw new Error("That file isn't valid JSON.")
   }
 
-  if (parsed.format !== 'booknotes-backup') {
-    throw new Error("That doesn't look like a BookNotes backup.")
+  if (parsed.format !== FORMAT && !LEGACY_FORMATS.includes(parsed.format)) {
+    throw new Error("That doesn't look like a ReadNote backup.")
   }
   if (parsed.version > EXPORT_VERSION) {
     throw new Error(
-      `This backup was made by a newer version of BookNotes (v${parsed.version}). Update the app first.`,
+      `This backup was made by a newer version of ReadNote (v${parsed.version}). Update the app first.`,
     )
   }
 

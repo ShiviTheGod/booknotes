@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
   // Must be globally unique for free-Apple-ID provisioning. Change it if you
   // ever hit a conflict when signing.
   appId: 'io.github.shivithegod.booknotes',
-  appName: 'BookNotes',
+  appName: 'ReadNote',
   webDir: 'dist',
   ios: {
     // The page handles the notch and home indicator itself, with viewport-fit=cover

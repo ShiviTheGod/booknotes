@@ -87,12 +87,12 @@ jobs:
         run: |
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/App.app Payload/
-          zip -qry BookNotes-unsigned.ipa Payload
-          ls -lh BookNotes-unsigned.ipa
+          zip -qry ReadNote-unsigned.ipa Payload
+          ls -lh ReadNote-unsigned.ipa
 
       - uses: actions/upload-artifact@v4
         with:
-          name: BookNotes-unsigned-ipa
-          path: ios/App/BookNotes-unsigned.ipa
+          name: ReadNote-unsigned-ipa
+          path: ios/App/ReadNote-unsigned.ipa
           # Long enough to still be there next time you get round to installing it.
           retention-days: 90

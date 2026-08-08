@@ -6,7 +6,7 @@ import Speech
 /**
  * Native dictation via SFSpeechRecognizer.
  *
- * This exists because the web Speech API is unusable in the exact place BookNotes
+ * This exists because the web Speech API is unusable in the exact place ReadNote
  * is meant to live: `webkitSpeechRecognition` works in a Safari tab but silently
  * fails once the app is launched standalone, and the constructor is still present,
  * so feature detection reports a false positive. Inside a Capacitor WebView the web

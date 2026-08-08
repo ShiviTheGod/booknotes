@@ -2,7 +2,7 @@
   "name": "booknotes-native",
   "version": "0.0.1",
   "private": true,
-  "description": "Native speech recognition and Vision text extraction for BookNotes.",
+  "description": "Native speech recognition and Vision text extraction for ReadNote.",
   "capacitor": {
     "ios": {
       "src": "ios"

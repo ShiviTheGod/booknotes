@@ -1,4 +1,4 @@
--- BookNotes: friends and reviews.
+-- ReadNote: friends and reviews.
 --
 -- Run this in your Supabase project after schema.sql, the same way: SQL Editor → New
 -- query → paste → Run. Safe to run more than once.

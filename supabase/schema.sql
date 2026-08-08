@@ -1,4 +1,4 @@
--- BookNotes sync schema.
+-- ReadNote sync schema.
 --
 -- Run this once in your Supabase project: SQL Editor → New query → paste → Run.
 --

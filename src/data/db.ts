@@ -2,7 +2,7 @@ import Dexie, { type EntityTable } from 'dexie'
 import type { Book, Chapter, ImageBlob, Note, Review, Setting, Tombstone } from './types'
 
 /**
- * BookNotes' local database.
+ * ReadNote's local database.
  *
  * Everything lives in IndexedDB on the device — there is no server in v1. All reads
  * and writes go through the repositories in ./repo rather than touching `db` directly,
@@ -15,7 +15,7 @@ import type { Book, Chapter, ImageBlob, Note, Review, Setting, Tombstone } from 
  *    a book in reading order with a single range query.
  *  - Blobs are in their own table so note queries never deserialize image data.
  */
-class BookNotesDB extends Dexie {
+class ReadNoteDB extends Dexie {
   books!: EntityTable<Book, 'id'>
   chapters!: EntityTable<Chapter, 'id'>
   notes!: EntityTable<Note, 'id'>
@@ -61,7 +61,7 @@ class BookNotesDB extends Dexie {
   }
 }
 
-export const db = new BookNotesDB()
+export const db = new ReadNoteDB()
 
 /** Stable id generator. crypto.randomUUID needs a secure context, which we always have. */
 export function newId(): string {

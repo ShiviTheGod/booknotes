@@ -59,7 +59,7 @@ export default function SettingsView() {
     if (!file) return
 
     const confirmed = window.confirm(
-      'Restoring replaces everything currently in BookNotes with the contents of this file. Continue?',
+      'Restoring replaces everything currently in ReadNote with the contents of this file. Continue?',
     )
     if (!confirmed) return
 
@@ -128,10 +128,10 @@ export default function SettingsView() {
 
       {showStorageWarning && (
         <section className={styles.warning}>
-          <h2 className={styles.warningTitle}>Add BookNotes to your Home Screen</h2>
+          <h2 className={styles.warningTitle}>Add ReadNote to your Home Screen</h2>
           <p>
             Safari clears stored data for websites left unused for about a week. Installing
-            BookNotes — <strong>Share → Add to Home Screen</strong> — exempts it from that and
+            ReadNote — <strong>Share → Add to Home Screen</strong> — exempts it from that and
             keeps your notes safe.
           </p>
           <p className={styles.warningNote}>
@@ -160,7 +160,7 @@ export default function SettingsView() {
           // iOS deletes the app's container along with the app, taking every note with it.
           // Re-signing the app each week is safe; deleting it is not.
           <p className={styles.help}>
-            <strong>Before you ever delete BookNotes, export.</strong> Removing the app erases
+            <strong>Before you ever delete ReadNote, export.</strong> Removing the app erases
             everything in it. Re-signing it each week keeps your notes; deleting does not.
           </p>
         )}
@@ -269,7 +269,7 @@ export default function SettingsView() {
 
       <NativeDiagnostics />
 
-      <p className={styles.version}>BookNotes v0.1 — a personal reading journal.</p>
+      <p className={styles.version}>ReadNote v0.1 — a personal reading journal.</p>
     </>
   )
 }

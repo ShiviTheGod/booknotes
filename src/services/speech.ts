@@ -92,7 +92,7 @@ export function checkSpeechAvailability(): SpeechAvailability {
       available: false,
       // The API is present here but non-functional, so this is worded as guidance
       // rather than "unsupported" — dictation is still very much possible.
-      reason: 'In-app dictation does not work when BookNotes is opened from the Home Screen.',
+      reason: 'In-app dictation does not work when ReadNote is opened from the Home Screen.',
       suggestKeyboardMic: true,
     }
   }

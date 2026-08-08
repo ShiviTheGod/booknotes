@@ -1,5 +1,5 @@
 /**
- * Core domain types for BookNotes.
+ * Core domain types for ReadNote.
  *
  * A note on dates: everything is stored as an ISO-8601 string rather than a Date.
  * IndexedDB can store Date objects, but strings survive JSON export/import

@@ -1,4 +1,4 @@
-# Getting BookNotes onto your iPhone as a real app
+# Getting ReadNote onto your iPhone as a real app
 
 **No Mac needed.** GitHub builds the app on a cloud Mac; you sign and install it from
 Windows with your existing Apple ID.
@@ -41,8 +41,8 @@ GitHub builds it on every push to `main`. To download one:
 
 1. Go to the [Actions tab](https://github.com/ShiviTheGod/booknotes/actions/workflows/ios.yml)
 2. Open the most recent successful **Build iOS app** run
-3. Download the **BookNotes-unsigned-ipa** artifact
-4. Unzip it — inside is `BookNotes-unsigned.ipa`
+3. Download the **ReadNote-unsigned-ipa** artifact
+4. Unzip it — inside is `ReadNote-unsigned.ipa`
 
 To trigger a build without pushing anything, use **Run workflow** on that page.
 
@@ -61,7 +61,7 @@ Runs on Windows, installs over USB.
 
 1. Install [Sideloadly](https://sideloadly.io/) and iTunes (it needs Apple's drivers)
 2. Connect your iPhone, trust the computer
-3. Drag `BookNotes-unsigned.ipa` into Sideloadly
+3. Drag `ReadNote-unsigned.ipa` into Sideloadly
 4. Enter your Apple ID, click Start
 
 ### AltStore — best if you don't want to re-plug in every week
@@ -113,7 +113,7 @@ On first use, iOS asks separately for:
   one without the other leaves it silently non-functional
 - **Camera** — for photographing pages
 
-If you tap Don't Allow, re-enable under **Settings → BookNotes**.
+If you tap Don't Allow, re-enable under **Settings → ReadNote**.
 
 ---
 
@@ -143,7 +143,7 @@ bundle ID clash. Change `appId` in [capacitor.config.ts](capacitor.config.ts) an
 7 days are up. Re-sign it.
 
 **Dictation does nothing** — check both Microphone *and* Speech Recognition in
-Settings → BookNotes.
+Settings → ReadNote.
 
 **OCR returns nothing** — the plugin passes EXIF orientation through to Vision, so
 rotation should be handled. Try a well-lit photo of printed text to confirm.

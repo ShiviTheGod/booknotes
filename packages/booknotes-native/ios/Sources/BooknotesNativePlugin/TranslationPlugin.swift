@@ -7,7 +7,7 @@ import UIKit
 /**
  * On-device translation of text read out of photographed pages.
  *
- * The reason this is native rather than a call to a translation API: BookNotes is a
+ * The reason this is native rather than a call to a translation API: ReadNote is a
  * static site with no backend, so any API key it held would be published with it.
  * Apple's framework needs no key, no account, and no network — the language packs
  * live on the phone. It is the only way this feature can exist without turning a

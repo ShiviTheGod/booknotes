@@ -19,7 +19,7 @@ export default function SupportProject() {
   return (
     <section className={styles.section}>
       <p className={styles.body}>
-        BookNotes is free, and every part of it stays free — there is nothing here to
+        ReadNote is free, and every part of it stays free — there is nothing here to
         unlock. If it has earned its place on your phone and you feel like it, you can
         put something in the jar.
       </p>
