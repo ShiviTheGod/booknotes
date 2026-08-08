@@ -39,7 +39,7 @@ deal.
 
 GitHub builds it on every push to `main`. To download one:
 
-1. Go to the [Actions tab](https://github.com/ShiviTheGod/booknotes/actions/workflows/ios.yml)
+1. Go to the [Actions tab](https://github.com/ShiviTheGod/readnote/actions/workflows/ios.yml)
 2. Open the most recent successful **Build iOS app** run
 3. Download the **ReadNote-unsigned-ipa** artifact
 4. Unzip it — inside is `ReadNote-unsigned.ipa`

@@ -42,7 +42,7 @@ jobs:
 
       - name: Build web assets for the native target
         # BUILD_TARGET=native switches the Vite base to relative paths and drops the
-        # service worker. Without it the bundle expects to live at /booknotes/ and
+        # service worker. Without it the bundle expects to live at /readnote/ and
         # resolves nothing under capacitor://localhost.
         run: npm run build:native
 

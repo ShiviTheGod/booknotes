@@ -5,16 +5,16 @@ import { VitePWA } from 'vite-plugin-pwa'
 /**
  * Two build targets with genuinely different needs:
  *
- *  - **web** (default) ships to GitHub Pages at https://<user>.github.io/booknotes/,
+ *  - **web** (default) ships to GitHub Pages at https://<user>.github.io/readnote/,
  *    so every asset must be prefixed with that path.
  *  - **native** is loaded by Capacitor from a local origin (capacitor://localhost),
- *    where an absolute "/booknotes/..." path points nowhere. It needs relative URLs.
+ *    where an absolute "/readnote/..." path points nowhere. It needs relative URLs.
  *
  * Select with BUILD_TARGET=native (see the build:native script).
  */
 const isNative = process.env.BUILD_TARGET === 'native'
 
-const BASE = isNative ? './' : '/booknotes/'
+const BASE = isNative ? './' : '/readnote/'
 
 export default defineConfig({
   base: BASE,
